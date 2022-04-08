@@ -1,6 +1,7 @@
 # datavis-project-2022-datartists
 
-## 1. Milestone 1 PDF
+## 1. Milestone 1
+You can find our Milestone 1 description in the DatArtists_Milestone1.pdf file.
 
 ## 2. Exploration notebook
 
