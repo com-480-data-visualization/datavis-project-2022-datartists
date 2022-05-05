@@ -1,0 +1,230 @@
+{
+  "actors": [
+    {
+      "name": "Adam Adele",
+      "movies": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "name": "Bob Bobens",
+      "movies": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    }
+  ],
+  "movies": [
+    {
+      "id": 0,
+      "title": "Movie 0",
+      "year": 1970,
+      "budget": 10,
+      "genres": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 1,
+      "title": "Movie 1",
+      "year": 1971,
+      "budget": 10,
+      "genres": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Movie 2",
+      "year": 1972,
+      "budget": 21,
+      "genres": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Movie 3",
+      "year": 1973,
+      "budget": 20,
+      "genres": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Movie 4",
+      "year": 1974,
+      "budget": 15,
+      "genres": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Movie 5",
+      "year": 1975,
+      "budget": 50,
+      "genres": [
+        2
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Movie 6",
+      "year": 1975,
+      "budget": 18,
+      "genres": [
+        2
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Movie 7",
+      "year": 1977,
+      "budget": 30,
+      "genres": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Movie 8",
+      "year": 1978,
+      "budget": 40,
+      "genres": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Movie 9",
+      "year": 1979,
+      "budget": 30,
+      "genres": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Movie 10",
+      "year": 1980,
+      "budget": 15,
+      "genres": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Movie 11",
+      "year": 1981,
+      "budget": 35,
+      "genres": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Movie 12",
+      "year": 1982,
+      "budget": 23,
+      "genres": [
+        2
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Movie 13",
+      "year": 1983,
+      "budget": 38,
+      "genres": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Movie 14",
+      "year": 1984,
+      "budget": 20,
+      "genres": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Movie 15",
+      "year": 1985,
+      "budget": 27,
+      "genres": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Movie 16",
+      "year": 1986,
+      "budget": 16,
+      "genres": [
+        1,
+        2
+      ]
+    }
+  ],
+  "genres": [
+    {
+      "id": 0,
+      "name": "Genre 1",
+      "color": "#32a852"
+    },
+    {
+      "id": 1,
+      "name": "Genre 2",
+      "color": "#3238a8"
+    },
+    {
+      "id": 2,
+      "name": "Genre 3",
+      "color": "#a83277"
+    }
+  ]
+}
