@@ -38,7 +38,7 @@ const font_config = {
 };
 
 function genreFromMovie(movie){
-    if (movie.genres){
+    if (movie.genres.length > 0){
         return genres.find(g => g.id === movie.genres[0])
     } else{
         return genres[0]
@@ -50,6 +50,6 @@ function visualizeMoviesTreeMap(movies) {
         .select('#treemap')
         .data(movies)
         .label(movie => movie.title)
-        //.color(movie => genreFromMovie(movie).color)
+        .color(movie => genreFromMovie(movie).color)
         .sum("budget")
 }
