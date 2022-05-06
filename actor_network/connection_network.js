@@ -9,7 +9,8 @@ function whenDocumentLoaded(action) {
 }
 
   /*
-  * Example graph for 10 most connected actors to Tom Cruise and their interconnections
+  * Example graph for 30 most connected actors to Tom Cruise and their interconnections
+  * prepare the data in the connection_graph.ipynb file
   */
 
   var nodes = []
