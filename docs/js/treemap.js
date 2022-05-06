@@ -12,7 +12,7 @@ function whenDocumentLoaded(action) {
 whenDocumentLoaded(() => {
   const actor_name = "Tom Cruise";
   let charactersViz;
-  d3.json("/data/data.json").then(function (json) {
+  d3.json("data/data.json").then(function (json) {
     console.log(json);
     const actor = json.actors.find((actor) => actor.name === actor_name);
     console.log(actor);
