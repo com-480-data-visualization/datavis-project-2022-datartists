@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DataArtists</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3plus@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/treemap.js"></script>
+  </head>
+  <body class="bg-slate-50">
+    <div class="p-4 flex flex-row justify-between">
+      <h1 class="text-2xl font-bold">
+        ActorsGalaxy <span class="text-lg text-gray-400">by DataArtists</span>
+      </h1>
+      <div>
+        <input
+          type="text"
+          placeholder="Search actor..."
+          class="p-2 rounded-md"
+        />
+        <button class="bg-blue-500 text-white p-2 rounded-md">Search</button>
+      </div>
+    </div>
+    <div class="flex" style="height: calc(100vh - 72px)">
+      <div
+        class="w-1/2 flex flex-col justify-center"
+        style="background-color: rgb(40, 40, 40)"
+      >
+        <img src="/img/graph.jpeg" />
+      </div>
+      <div class="w-1/2">
+        <div class="h-1/2 text-lg p-5 bg-white">
+          <div class="h-1/2">
+            <p class="text-xl font-bold">Actor: Tom Cruise</p>
+            <div class="flex flex-wrap">
+              <p class="w-1/2">Number of films: 50</p>
+              <p class="w-1/2">Average rating: 4.3</p>
+              <p class="w-1/2">Average budget: 10.2M $</p>
+              <p class="w-1/2">Total budget: 353M $</p>
+              <p class="w-1/2">etc...</p>
+            </div>
+          </div>
+          <div class="h-1/2 flex flex-row justify-center">
+            <img class="w-full" src="/img/nbofmovies.jpeg" />
+          </div>
+        </div>
+        <div class="h-1/2"><div id="treemap"></div></div>
+      </div>
+    </div>
+  </body>
+</html>
