@@ -173,6 +173,7 @@ class Treemap {
 }
 
 $(document).ready(function () {
+  window.name = "Tom Cruise";
   const treemap = new Treemap("#treemap");
   treemap.getData().then(() => treemap.draw(window.name));
   window.reloadTreemap = (name) => {
