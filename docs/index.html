@@ -5,13 +5,22 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DatArtists</title>
+    <link rel="stylesheet" href="css/style.css" />
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3plus@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
     <script src="js/treemap.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/network.js"></script>
   </head>
-  <body class="bg-slate-50">
-    <div class="p-4 flex flex-row justify-between">
+  <body class="">
+    <div class="p-4 flex flex-row justify-between bg-slate-50">
       <h1 class="text-2xl font-bold">
         ActorsGalaxy <span class="text-lg text-gray-400">by DatArtists</span>
       </h1>
@@ -20,34 +29,43 @@
           type="text"
           placeholder="Search actor..."
           class="p-2 rounded-md"
+          id="search-input"
         />
-        <button class="bg-blue-500 text-white p-2 rounded-md">Search</button>
+        <!-- <button id="search-btn" class="bg-blue-500 text-white p-2 rounded-md">
+          Search
+        </button> -->
+        <div
+          id="search-results"
+          class="search-results"
+          style="display: none"
+        ></div>
       </div>
     </div>
     <div class="flex" style="height: calc(100vh - 72px)">
-      <div
-        class="w-1/2 flex flex-col justify-center"
-        style="background-color: rgb(40, 40, 40)"
-      >
-        <img src="img/graph.jpeg" />
+      <div class="w-1/2 flex flex-col justify-center">
+        <!-- <img src="img/graph.jpeg" /> -->
+        <div id="network" class="h-full"></div>
       </div>
       <div class="w-1/2">
-        <div class="h-1/2 text-lg p-5 bg-white">
-          <div class="h-1/2">
-            <p class="text-xl font-bold">Actor: Tom Cruise</p>
-            <div class="flex flex-wrap">
-              <p class="w-1/2">Number of films: 50</p>
+        <div class="h-1/2 text-lg bg-white">
+          <div class="h-1/2 p-5">
+            <p class="text-xl font-bold">
+              Actor: <span class="actor-name"></span>
+            </p>
+            <div id="actor-stats" class="flex flex-wrap">
+              <!-- <p class="w-1/2">Number of films: 50</p>
               <p class="w-1/2">Average rating: 4.3</p>
               <p class="w-1/2">Average budget: 10.2M $</p>
               <p class="w-1/2">Total budget: 353M $</p>
-              <p class="w-1/2">etc...</p>
+              <p class="w-1/2">etc...</p> -->
             </div>
           </div>
-          <div class="h-1/2 flex flex-row justify-center">
-            <img class="w-full" src="img/nbofmovies.jpeg" />
+          <div class="h-1/2">
+            <div class="h-full" id="releases"></div>
+            <!-- <img class="w-full" src="img/nbofmovies.jpeg" /> -->
           </div>
         </div>
-        <div class="h-1/2"><div id="treemap"></div></div>
+        <div class="h-1/2"><div id="treemap" class="h-full"></div></div>
       </div>
     </div>
   </body>
