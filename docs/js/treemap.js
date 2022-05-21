@@ -58,6 +58,8 @@ class Treemap {
           children: ids.map((id) => ({
             name: this.movies[id].title,
             value: Math.max(100000, this.movies[id].budget),
+            year: this.movies[id].release_date.split('-')[0],
+            poster_path: this.movies[id].poster_path,
           })),
         })),
     };
@@ -91,7 +93,10 @@ class Treemap {
               that.tooltip.transition().duration(50).style("opacity", 1);
               that.tooltip
                 .html(
+                    `<img src='https://image.tmdb.org/t/p/original${n.data.poster_path}'>` +
                   n.data.name +
+                    "<br>Year: " +
+                    n.data.year +
                     "<br>Genre: " +
                     n.parent.data.name +
                     "<br>Budget: " +
