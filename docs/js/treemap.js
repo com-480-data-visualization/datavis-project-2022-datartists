@@ -13,7 +13,7 @@ class Treemap {
   getData() {
     return Promise.all([
       d3.json("data/actors_genres_movies.json"),
-      d3.json("data/movies.json"),
+      d3.json("data/movies_new_urls.json"),
     ]).then(([data, movies]) => {
       this.data = data;
       this.movies = movies;
@@ -93,7 +93,7 @@ class Treemap {
               that.tooltip.transition().duration(50).style("opacity", 1);
               that.tooltip
                 .html(
-                    `<img src='https://image.tmdb.org/t/p/original${n.data.poster_path}'>` +
+                    `<img src='https://image.tmdb.org/t/p/w200/${n.data.poster_path}'>` +
                   n.data.name +
                     "<br>Year: " +
                     n.data.year +
