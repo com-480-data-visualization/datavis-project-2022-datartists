@@ -20,9 +20,9 @@
     <script src="js/network.js"></script>
   </head>
   <body class="">
-    <div class="p-4 flex flex-row justify-between bg-slate-50">
+    <div class="p-4 flex flex-row justify-between bg-slate-50" style="background-color: rgb(248, 138, 70)">
       <h1 class="text-2xl font-bold">
-        ActorsGalaxy <span class="text-lg text-gray-400">by DatArtists</span>
+        ActorsGalaxy <span class="text-lg text-white">by DatArtists</span>
       </h1>
       <div>
         <input
@@ -47,23 +47,32 @@
         <div id="network" class="h-full"></div>
       </div>
       <div class="w-1/2">
-        <div class="h-1/2 text-lg bg-white">
-          <div class="h-1/2 p-5">
-            <p class="text-xl font-bold">
-              Actor: <span class="actor-name"></span>
-            </p>
-            <div id="actor-stats" class="flex flex-wrap">
-              <!-- <p class="w-1/2">Number of films: 50</p>
-              <p class="w-1/2">Average rating: 4.3</p>
-              <p class="w-1/2">Average budget: 10.2M $</p>
-              <p class="w-1/2">Total budget: 353M $</p>
-              <p class="w-1/2">etc...</p> -->
-            </div>
-          </div>
-          <div class="h-1/2">
-            <div class="h-full" id="releases"></div>
+        <div class="h-1/2 text-md bg-white">
+
+              <div class="h-2/3 flex flex-row">
+                <div class="w-1/2 flex flex-col">
+                  <p class="text-xl font-bold">
+                    <span class="actor-name"></span>
+                  </p>
+                  <div id="actor-stats" class="h-full flex flex-col">
+                    <!-- <p class="w-1/2">Number of films: 50</p>
+                    <p class="w-1/2">Average rating: 4.3</p>
+                    <p class="w-1/2">Average budget: 10.2M $</p>
+                    <p class="w-1/2">Total budget: 353M $</p>
+                    <p class="w-1/2">etc...</p> -->
+                  </div>
+                  
+                </div>
+                <div id="actor-image" class="w-1/2 flex justify-center"> 
+                  <img src="https://image.tmdb.org/t/p/original/pQFoyx7rp09CJTAb932F2g8Nlho.jpg">
+                </div>
+              </div>
+          
+          <div class="h-1/3">
+            <div class="h-full flex" id="releases"></div>
             <!-- <img class="w-full" src="img/nbofmovies.jpeg" /> -->
           </div>
+
         </div>
         <div class="h-1/2"><div id="treemap" class="h-full"></div></div>
       </div>

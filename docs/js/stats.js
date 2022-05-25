@@ -4,7 +4,7 @@ window.showStats = (name) => {
   $("#actor-stats").find("*").remove();
   for (const key in actor_stats) {
     $("#actor-stats").append(
-      `<p class="w-1/2">${key}: ${actor_stats[key]}</p>`
+      `<p class="h-1/2">${key}: ${actor_stats[key]}</p>`
     );
   }
 };
@@ -75,7 +75,7 @@ class TimeBarChart {
     this.svg
       .append("text")
       .attr("x", width / 2)
-      .attr("y", 20)
+      .attr("y", 18)
       .text("Number of movies per year")
       .attr("text-anchor", "middle");
 
