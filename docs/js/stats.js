@@ -2,10 +2,22 @@ window.showStats = (name) => {
   const actor_stats = window.stats[name];
 
   $("#actor-stats").find("*").remove();
+  $("#actor-image").find("*").remove();
+
+  const stat_elements = ["Total movies", "Average rating", "Average budget", "Average revenue"]
+
   for (const key in actor_stats) {
-    $("#actor-stats").append(
-      `<p class="h-1/2">${key}: ${actor_stats[key]}</p>`
-    );
+    if (stat_elements.includes(key)) {
+      $("#actor-stats").append(
+        `<p class="h-1/2">${key}: ${actor_stats[key]}</p>`
+      );
+    }
+    if (key == "profile_path"){
+      $("#actor-image").append(
+        `<img src="https://image.tmdb.org/t/p/original/${actor_stats[key]}"></img>`
+      );
+    }
+    
   }
 };
 
