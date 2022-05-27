@@ -13,7 +13,7 @@ class Treemap {
   getData() {
     return Promise.all([
       d3.json("data/actors_genres_movies.json"),
-      d3.json("data/movies_new_urls.json"),
+      d3.json("data/movies.json"),
     ]).then(([data, movies]) => {
       this.data = data;
       this.movies = movies;
@@ -90,25 +90,34 @@ class Treemap {
                 .transition()
                 .duration("50")
                 .attr("opacity", ".85");
-              that.tooltip.transition().duration(50).style("opacity", 1);
+              that.tooltip.transition().duration(50).style("opacity", 1).style("width", 200 + "px");
               that.tooltip
                 .html(
                     `<img src='https://image.tmdb.org/t/p/w200/${n.data.poster_path}'>` +
-                  n.data.name +
+                    "<b>" +
+                    n.data.name +
+                    "</b>" +
                     "<br>Year: " +
                     n.data.year +
                     "<br>Genre: " +
                     n.parent.data.name +
                     "<br>Budget: " +
-                    n.data.value
-                )
-                .style("left", ev.pageX + "px")
-                .style("top", ev.pageY - 100 + "px");
+                    format_money(n.data.value)
+                );
+                const tooltip_rect = that.tooltip
+                    .node()
+                    .getBoundingClientRect();
+              that.tooltip
+                .style("left", Math.min(ev.pageX, $(window).width() - tooltip_rect.width/2 -10) + "px")
+                .style("top", ev.pageY - tooltip_rect.height -10 + "px");
             })
             .on("mousemove", function (ev, n) {
-              that.tooltip
-                .style("left", ev.pageX + "px")
-                .style("top", ev.pageY - 100 + "px");
+                const tooltip_rect = that.tooltip
+                    .node()
+                    .getBoundingClientRect();
+                that.tooltip
+                    .style("left", Math.min(ev.pageX, $(window).width() - tooltip_rect.width/2 -10) + "px")
+                    .style("top", ev.pageY - tooltip_rect.height - 10 + "px");
             })
             .on("mouseout", function (ev, n) {
               d3.select(this).transition().duration("50").attr("opacity", "1");
@@ -174,6 +183,22 @@ class Treemap {
           return update;
         }
       );
+  }
+}
+
+function format_money(value) {
+  if (value >= 1e9) {
+    return "$" + (value / 1e9).toFixed(2) + "B";
+  } else {
+    if (value >= 1e6) {
+      return "$" + (value / 1e6).toFixed(2) + "M";
+    } else {
+      if (value >= 1e3) {
+        return "$" + (value / 1e3).toFixed(2) + "K";
+      } else {
+        return "$" + value.toFixed(2);
+      }
+    }
   }
 }
 
