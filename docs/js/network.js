@@ -3,8 +3,25 @@ class NetworkGraph {
     this.container = d3.select(container);
     this.name = name;
     d3.select(".actor-name").html(name);
-    this.getData().then(() => {
-      this.draw();
+
+    this.weightScale = d3.scaleSqrt().domain([1, 15]).range([5, 30]);
+
+    d3.json("data/movies.json").then((data) => {
+      this.movies = data;
+
+      d3.json("data/actors_stats.json").then((data) => {
+        this.actors = data;
+
+        d3.json("data/actors_genres_movies.json").then((data) => {
+          this.actors_genres = data;
+          const genres = Object.keys(data[Object.keys(data)[0]]);
+          this.genresColor = d3.scaleOrdinal(genres, d3.schemeTableau10);
+
+          this.getData().then(() => {
+            this.draw();
+          });
+        });
+      });
     });
   }
 
@@ -18,21 +35,12 @@ class NetworkGraph {
 
   getData(top = 20) {
     return d3.json("data/actor_edges.json").then((edges_data) => {
-      let unique = new Set();
       let nodes = edges_data
         .filter((e) => {
-          return (
-            (e.source === this.name || e.target === this.name) &&
-            e.source !== e.target
-          );
+          return e.source === this.name || e.target === this.name;
         })
-        .sort((e1, e2) => e2.weigth - e1.weigth)
+        .sort((e1, e2) => e2.weight - e1.weight)
         .map((e) => ({ id: e.source === this.name ? e.target : e.source }))
-        .filter((e) => {
-          const has = unique.has(e.id);
-          unique.add(e.id);
-          return !has;
-        })
         .slice(0, top);
       nodes.push({ id: this.name });
 
@@ -143,20 +151,32 @@ class NetworkGraph {
               d3.select(this)
                 .transition()
                 .duration("50")
-                .attr("opacity", ".85");
+                .attr("filter", "brightness(60%)");
               that.tooltip.transition().duration(50).style("opacity", 1);
+              that.tooltip.html(
+                that.actors[n.id].profile_path + "<br><b>" + n.id + "</b>"
+              );
+
+              const { width, height } = that.tooltip
+                .node()
+                .getBoundingClientRect();
               that.tooltip
-                .html(n.id)
-                .style("left", ev.pageX + "px")
-                .style("top", ev.pageY - 50 + "px");
+                .style("left", Math.max(ev.pageX, width / 2) + "px")
+                .style("top", ev.pageY - height - 10 + "px");
             })
             .on("mousemove", function (ev, n) {
+              const { width, height } = that.tooltip
+                .node()
+                .getBoundingClientRect();
               that.tooltip
-                .style("left", ev.pageX + "px")
-                .style("top", ev.pageY - 50 + "px");
+                .style("left", Math.max(ev.pageX, width / 2) + "px")
+                .style("top", ev.pageY - height - 10 + "px");
             })
             .on("mouseout", function (ev, n) {
-              d3.select(this).transition().duration("50").attr("opacity", "1");
+              d3.select(this)
+                .transition()
+                .duration("50")
+                .attr("filter", "brightness(100%)");
               that.tooltip.transition().duration("50").style("opacity", 0);
             })
             .on("click", (ev, n) => {
@@ -171,7 +191,22 @@ class NetworkGraph {
             .attr("r", (d) => {
               return d.id === this.name ? 20 : 10;
             })
-            .style("fill", "#69b3a2");
+            .style("fill", (d) => {
+              const sums = Object.entries(that.actors_genres[d.id]).map(
+                ([k, v]) => [
+                  k,
+                  v.reduce(
+                    (acc, a) => acc + parseInt(that.movies[a].budget),
+                    0
+                  ),
+                ]
+              );
+              console.log(sums);
+              const maxGenre = sums[d3.maxIndex(sums, (d) => d[1])][0];
+              console.log(d.id + " " + maxGenre);
+
+              return that.genresColor(maxGenre);
+            });
 
           node
             .append("text")
@@ -206,28 +241,60 @@ class NetworkGraph {
     this.link = this.link
       .data(edges, (d) => d.source + "-" + d.target)
       .join("line")
-      .style("stroke", "rgba(0,0,0,0.1)")
+      .style("stroke", "rgba(0,0,0,0.05)")
       .style("stroke-width", function (d) {
-        return d.weigth * 2 + "px";
+        return that.weightScale(d.weight) + "px";
       })
-      .attr("data-target", (d) => d.target)
-      .attr("data-source", (d) => d.source)
       .on("mouseover", function (ev, l) {
-        d3.select(this).transition().duration("50").attr("opacity", ".85");
+        const movieNames = l.movie_ids.map((id) => that.movies[id].title);
+
+        that.node
+          .filter((n) => {
+            return n.id === l.source.id || n.id === l.target.id;
+          })
+          .select("circle")
+          .transition()
+          .duration("50")
+          .attr("filter", "brightness(60%)");
+        d3.select(this)
+          .transition()
+          .duration("50")
+          .style("stroke", "rgba(0,0,0,0.7)");
         that.tooltip.transition().duration(50).style("opacity", 1);
+        that.tooltip.html(
+          "<b>" +
+            l.source.id +
+            " and " +
+            l.target.id +
+            ":</b><br>" +
+            movieNames.join("<br>")
+        );
+        const { width, height } = that.tooltip.node().getBoundingClientRect();
+
         that.tooltip
-          .html(l.weigth + " movies in common")
-          .style("left", ev.pageX + "px")
-          .style("top", ev.pageY - 50 + "px");
+          .style("left", Math.max(ev.pageX, width / 2) + "px")
+          .style("top", ev.pageY - height - 10 + "px");
       })
       .on("mousemove", function (ev, n) {
+        const { width, height } = that.tooltip.node().getBoundingClientRect();
         that.tooltip
-          .style("left", ev.pageX + "px")
-          .style("top", ev.pageY - 50 + "px");
+          .style("left", Math.max(ev.pageX, width / 2) + "px")
+          .style("top", ev.pageY - height - 10 + "px");
       })
-      .on("mouseout", function (ev, n) {
-        d3.select(this).transition().duration("50").attr("opacity", "1");
+      .on("mouseout", function (ev, l) {
+        d3.select(this)
+          .transition()
+          .duration("50")
+          .style("stroke", "rgba(0,0,0,0.05)");
         that.tooltip.transition().duration("50").style("opacity", 0);
+        that.node
+          .filter((n) => {
+            return n.id === l.source.id || n.id === l.target.id;
+          })
+          .select("circle")
+          .transition()
+          .duration("50")
+          .attr("filter", "brightness(100%)");
       });
   }
 
