@@ -58,6 +58,10 @@ class Treemap {
           children: ids.map((id) => ({
             name: this.movies[id].title,
             value: Math.max(100000, this.movies[id].budget),
+            budget: format_money(this.movies[id].budget),
+            revenue: format_money(this.movies[id].revenue),
+            vote_average: this.movies[id].vote_average,
+            vote_count: this.movies[id].vote_count,
             year: this.movies[id].release_date.split('-')[0],
             poster_path: this.movies[id].poster_path,
           })),
@@ -102,7 +106,11 @@ class Treemap {
                     "<br>Genre: " +
                     n.parent.data.name +
                     "<br>Budget: " +
-                    format_money(n.data.value)
+                    n.data.budget +
+                    "<br>Revenue: " +
+                    n.data.revenue +
+                    "<br>Rating: " +
+                    n.data.vote_average + " (" + n.data.vote_count + " votes)"
                 );
                 const tooltip_rect = that.tooltip
                     .node()
