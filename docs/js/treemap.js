@@ -150,13 +150,7 @@ class Treemap {
             .each(function (d) {
               const self = d3.select(this);
               const maxWidth = d.x1 - d.x0 - 5;
-              let textLength = self.node().getBBox().width;
-              let text = self.text();
-              while (textLength > maxWidth && text.length > 0) {
-                text = text.slice(0, -1);
-                self.text(text + "...");
-                textLength = self.node().getBBox().width;
-              }
+              resizeText(self, maxWidth, 10, 50);
             })
             .attr("fill", "white");
 
@@ -180,17 +174,35 @@ class Treemap {
             .each(function (d) {
               const self = d3.select(this);
               const maxWidth = d.x1 - d.x0 - 5;
-              let textLength = self.node().getBBox().width;
-              let text = self.text();
-              while (textLength > maxWidth && text.length > 0) {
-                text = text.slice(0, -1);
-                self.text(text + "...");
-                textLength = self.node().getBBox().width;
-              }
+              // Reset text
+              self.text(d.data.name);
+              // Resize text according to maxWidth
+              resizeText(self, maxWidth, 10, 50);
+              // Move the textbox to fit the new size
+              //self.attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + 15})`)
             });
           return update;
         }
       );
+  }
+}
+
+// Fit text into maxWidth while using the largest fontsize between minSize and maxSize
+// If the text does not fit with minSize, add ellipsis
+function resizeText(textElement, maxWidth, minSize, maxSize){
+  let text = textElement.text();
+  let fontSize = maxSize;
+  textElement.style('font-size', fontSize + "pt");
+  let textLength = textElement.node().getBBox().width;
+  while (textLength > maxWidth && fontSize > minSize){
+    textElement.style('font-size', fontSize + "pt");
+    textLength = textElement.node().getBBox().width;
+    fontSize--;
+  }
+  while (textLength > maxWidth && text.length > 0) {
+    text = text.slice(0, -1);
+    textElement.text(text + "...");
+    textLength = textElement.node().getBBox().width;
   }
 }
 
