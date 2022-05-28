@@ -154,7 +154,11 @@ class NetworkGraph {
                 .attr("filter", "brightness(60%)");
               that.tooltip.transition().duration(50).style("opacity", 1);
               that.tooltip.html(
-                that.actors[n.id].profile_path + "<br><b>" + n.id + "</b>"
+                "<img src='https://image.tmdb.org/t/p/w200/" +
+                  that.actors[n.id].profile_path +
+                  "'/><b>" +
+                  n.id +
+                  "</b>"
               );
 
               const { width, height } = that.tooltip
@@ -162,7 +166,7 @@ class NetworkGraph {
                 .getBoundingClientRect();
               that.tooltip
                 .style("left", Math.max(ev.pageX, width / 2) + "px")
-                .style("top", ev.pageY - height - 10 + "px");
+                .style("top", Math.max(0, ev.pageY - height - 10) + "px");
             })
             .on("mousemove", function (ev, n) {
               const { width, height } = that.tooltip
@@ -170,7 +174,7 @@ class NetworkGraph {
                 .getBoundingClientRect();
               that.tooltip
                 .style("left", Math.max(ev.pageX, width / 2) + "px")
-                .style("top", ev.pageY - height - 10 + "px");
+                .style("top", Math.max(0, ev.pageY - height - 10) + "px");
             })
             .on("mouseout", function (ev, n) {
               d3.select(this)
@@ -241,6 +245,7 @@ class NetworkGraph {
     this.link = this.link
       .data(edges, (d) => d.source + "-" + d.target)
       .join("line")
+      .style("cursor", "pointer")
       .style("stroke", "rgba(0,0,0,0.05)")
       .style("stroke-width", function (d) {
         return that.weightScale(d.weight) + "px";
