@@ -1,6 +1,7 @@
 class Treemap {
-  constructor(container) {
+  constructor(container, legend_container) {
     this.container = d3.select(container);
+    this.legend_container = d3.select(legend_container);
     this.data = [];
     this.margin = {
       top: 5,
@@ -18,8 +19,8 @@ class Treemap {
       this.data = data;
       this.movies = movies;
 
-      const genres = Object.keys(this.data[Object.keys(this.data)[0]]);
-      this.color = d3.scaleOrdinal(genres, d3.schemeTableau10);
+      this.genres = Object.keys(this.data[Object.keys(this.data)[0]]);
+      this.color = d3.scaleOrdinal(this.genres, d3.schemeTableau10);
     });
   }
 
@@ -30,14 +31,62 @@ class Treemap {
 
   draw(name) {
     this.name = name;
-    this.svg = this.container.append("svg").style("font-size", 12);
-
+    this.svg = this.container.append("svg");
+    this.legend_svg = this.legend_container.append("svg");
+    this.draw_legend();
+    
     this.tooltip = this.container
       .append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
 
     this.draw_tree();
+  }
+  
+  draw_legend(){
+    let that = this;
+    let dataL = 0;
+    let offset = 5;
+    let size = 20;
+
+    const { height, width } = this.legend_container.node().getBoundingClientRect();
+    let n_break = this.genres.length/2;
+
+    this.legend_svg.attr("width", width).attr("height", height);
+    let legend = this.legend_svg.selectAll('g')
+        .data(this.genres)
+        .enter().append('g')
+
+    legend.append('rect')
+        .attr("width", size)
+        .attr("height", size)
+        .style("fill", function (d) {
+          return that.color(d)
+        })
+
+    legend.append('text')
+        .attr("x", size +5)
+      .attr('y', size - 5)
+    .text(function (d) {
+        return d
+      })
+        .style("text-anchor", "start")
+        .style("font-size", size + 'px')
+
+      legend.attr("transform", function (d, i) {
+        let width = d3.select(this).node().getBBox().width;
+        if (i === 0) {
+          dataL = width + offset
+          return `translate(0, 5)`
+        } else {
+          if (i === n_break){
+            dataL = 0
+          }
+          var newdataL = dataL
+          dataL +=  width + offset
+          return `translate(${newdataL}, ${i >= n_break? size * 1.5:5})`
+        }
+      })
   }
 
   draw_tree() {
@@ -237,6 +286,9 @@ function resizeText(textElement, maxWidth, minSize, maxSize){
 }
 
 function format_money(value) {
+  if (value === 0){
+    return "-";
+  }
   if (value >= 1e9) {
     return "$" + parseFloat((value / 1e9).toFixed(2)) + "B";
   } else {
@@ -254,7 +306,7 @@ function format_money(value) {
 
 $(document).ready(function () {
   window.name = "Tom Cruise";
-  const treemap = new Treemap("#treemap");
+  const treemap = new Treemap("#treemap", "#treemap-legend");
   treemap.getData().then(() => treemap.draw(window.name));
   window.reloadTreemap = (name) => {
     treemap.update(name);
