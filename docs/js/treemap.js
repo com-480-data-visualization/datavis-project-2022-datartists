@@ -146,11 +146,12 @@ class Treemap {
           node
             .append("text")
             .text((d) => d.data.name)
-            .attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + 15})`)
             .each(function (d) {
               const self = d3.select(this);
               const maxWidth = d.x1 - d.x0 - 5;
-              resizeText(self, maxWidth, 10, 50);
+              let newSize = resizeText(self, maxWidth);
+              // Move the textbox to fit the new size
+              self.attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + newSize})`)
             })
             .attr("fill", "white");
 
@@ -168,18 +169,16 @@ class Treemap {
             .attr("fill", (d, i) => this.color(d.parent.data.name));
           update
             .select("text")
-            .transition()
-            .duration(1000)
-            .attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + 15})`)
             .each(function (d) {
               const self = d3.select(this);
               const maxWidth = d.x1 - d.x0 - 5;
               // Reset text
               self.text(d.data.name);
               // Resize text according to maxWidth
-              resizeText(self, maxWidth, 10, 50);
+              let newSize = resizeText(self, maxWidth);
               // Move the textbox to fit the new size
-              //self.attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + 15})`)
+              self.transition().duration(1000)
+                .attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + newSize})`)
             });
           return update;
         }
@@ -189,13 +188,16 @@ class Treemap {
 
 // Fit text into maxWidth while using the largest fontsize between minSize and maxSize
 // If the text does not fit with minSize, add ellipsis
-function resizeText(textElement, maxWidth, minSize, maxSize){
+function resizeText(textElement, maxWidth){
+  // Font range in pixels
+  const minSize = 15;
+  const maxSize = 40
   let text = textElement.text();
   let fontSize = maxSize;
-  textElement.style('font-size', fontSize + "pt");
+  textElement.style('font-size', fontSize + "px");
   let textLength = textElement.node().getBBox().width;
   while (textLength > maxWidth && fontSize > minSize){
-    textElement.style('font-size', fontSize + "pt");
+    textElement.style('font-size', fontSize + "px");
     textLength = textElement.node().getBBox().width;
     fontSize--;
   }
@@ -204,6 +206,7 @@ function resizeText(textElement, maxWidth, minSize, maxSize){
     textElement.text(text + "...");
     textLength = textElement.node().getBBox().width;
   }
+  return fontSize;
 }
 
 function format_money(value) {
