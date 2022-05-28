@@ -145,13 +145,29 @@ class Treemap {
 
           node
             .append("text")
+            .attr("id", "movie-title")
             .text((d) => d.data.name)
             .each(function (d) {
               const self = d3.select(this);
               const maxWidth = d.x1 - d.x0 - 5;
-              let newSize = resizeText(self, maxWidth);
+              let newSize = resizeText(self, maxWidth, 15, 40);
               // Move the textbox to fit the new size
               self.attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + newSize})`)
+            })
+            .attr("fill", "white");
+
+          node
+            .append("text")
+            .attr("id","movie-budget")
+            .text((d) => d.data.budget)
+            .each(function (d) {
+              const self = d3.select(this);
+              const maxWidth = d.x1 - d.x0 - 5;
+              let newSize = resizeText(self, maxWidth, 15, 30);
+              // Move the textbox to fit the new size
+              let textLength = self.node().getBBox().width;
+              self.transition().duration(1000)
+                .attr("transform", (d) => `translate(${d.x0 +maxWidth/2 - textLength/2},${d.y1-5})`)
             })
             .attr("fill", "white");
 
@@ -168,17 +184,31 @@ class Treemap {
             .attr("height", (d) => d.y1 - d.y0)
             .attr("fill", (d, i) => this.color(d.parent.data.name));
           update
-            .select("text")
+            .select("#movie-title")
             .each(function (d) {
               const self = d3.select(this);
               const maxWidth = d.x1 - d.x0 - 5;
               // Reset text
               self.text(d.data.name);
               // Resize text according to maxWidth
-              let newSize = resizeText(self, maxWidth);
+              let newSize = resizeText(self, maxWidth, 15, 40);
               // Move the textbox to fit the new size
               self.transition().duration(1000)
                 .attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + newSize})`)
+            });
+          update
+            .select("#movie-budget")
+            .each(function (d) {
+              const self = d3.select(this);
+              const maxWidth = d.x1 - d.x0 - 5;
+              // Reset text
+              self.text(d.data.budget);
+              // Resize text according to maxWidth
+              let newSize = resizeText(self, maxWidth, 15, 30);
+              // Move the textbox to fit the new size
+              let textLength = self.node().getBBox().width;
+              self.transition().duration(1000)
+                .attr("transform", (d) => `translate(${d.x0 +maxWidth/2 - textLength/2},${d.y1-5})`)
             });
           return update;
         }
@@ -188,10 +218,7 @@ class Treemap {
 
 // Fit text into maxWidth while using the largest fontsize between minSize and maxSize
 // If the text does not fit with minSize, add ellipsis
-function resizeText(textElement, maxWidth){
-  // Font range in pixels
-  const minSize = 15;
-  const maxSize = 40
+function resizeText(textElement, maxWidth, minSize, maxSize){
   let text = textElement.text();
   let fontSize = maxSize;
   textElement.style('font-size', fontSize + "px");
@@ -211,15 +238,15 @@ function resizeText(textElement, maxWidth){
 
 function format_money(value) {
   if (value >= 1e9) {
-    return "$" + (value / 1e9).toFixed(2) + "B";
+    return "$" + parseFloat((value / 1e9).toFixed(2)) + "B";
   } else {
     if (value >= 1e6) {
-      return "$" + (value / 1e6).toFixed(2) + "M";
+      return "$" + parseFloat((value / 1e6).toFixed(2)) + "M";
     } else {
       if (value >= 1e3) {
-        return "$" + (value / 1e3).toFixed(2) + "K";
+        return "$" + parseFloat((value / 1e3).toFixed(2)) + "K";
       } else {
-        return "$" + value.toFixed(2);
+        return "$" + parseFloat(value.toFixed(2));
       }
     }
   }
