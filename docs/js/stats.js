@@ -17,7 +17,6 @@ window.showStats = (name) => {
         `<img src="https://image.tmdb.org/t/p/original/${actor_stats[key]}"></img>`
       );
     }
-    
   }
 };
 
