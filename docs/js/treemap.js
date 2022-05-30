@@ -1,6 +1,7 @@
 class Treemap {
-  constructor(container) {
+  constructor(container, legend_container) {
     this.container = d3.select(container);
+    this.legend_container = d3.select(legend_container);
     this.data = [];
     this.margin = {
       top: 5,
@@ -18,8 +19,8 @@ class Treemap {
       this.data = data;
       this.movies = movies;
 
-      const genres = Object.keys(this.data[Object.keys(this.data)[0]]);
-      this.color = d3.scaleOrdinal(genres, d3.schemeTableau10);
+      this.genres = Object.keys(this.data[Object.keys(this.data)[0]]);
+      this.color = d3.scaleOrdinal(this.genres, d3.schemeTableau10);
     });
   }
 
@@ -30,14 +31,62 @@ class Treemap {
 
   draw(name) {
     this.name = name;
-    this.svg = this.container.append("svg").style("font-size", 12);
-
+    this.svg = this.container.append("svg");
+    this.legend_svg = this.legend_container.append("svg");
+    this.draw_legend();
+    
     this.tooltip = this.container
       .append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
 
     this.draw_tree();
+  }
+  
+  draw_legend(){
+    let that = this;
+    let dataL = 0;
+    let offset = 5;
+    let size = 20;
+
+    const { height, width } = this.legend_container.node().getBoundingClientRect();
+    let n_break = this.genres.length/2;
+
+    this.legend_svg.attr("width", width).attr("height", height);
+    let legend = this.legend_svg.selectAll('g')
+        .data(this.genres)
+        .enter().append('g')
+
+    legend.append('rect')
+        .attr("width", size)
+        .attr("height", size)
+        .style("fill", function (d) {
+          return that.color(d)
+        })
+
+    legend.append('text')
+        .attr("x", size +5)
+      .attr('y', size - 5)
+    .text(function (d) {
+        return d
+      })
+        .style("text-anchor", "start")
+        .style("font-size", size + 'px')
+
+      legend.attr("transform", function (d, i) {
+        let width = d3.select(this).node().getBBox().width;
+        if (i === 0) {
+          dataL = width + offset
+          return `translate(0, 5)`
+        } else {
+          if (i === n_break){
+            dataL = 0
+          }
+          var newdataL = dataL
+          dataL +=  width + offset
+          return `translate(${newdataL}, ${i >= n_break? size * 1.5:5})`
+        }
+      })
   }
 
   draw_tree() {
@@ -58,6 +107,12 @@ class Treemap {
           children: ids.map((id) => ({
             name: this.movies[id].title,
             value: Math.max(100000, this.movies[id].budget),
+            budget: format_money(this.movies[id].budget),
+            revenue: format_money(this.movies[id].revenue),
+            vote_average: this.movies[id].vote_average,
+            vote_count: this.movies[id].vote_count,
+            year: this.movies[id].release_date.split('-')[0],
+            poster_path: this.movies[id].poster_path,
           })),
         })),
     };
@@ -88,22 +143,38 @@ class Treemap {
                 .transition()
                 .duration("50")
                 .attr("opacity", ".85");
-              that.tooltip.transition().duration(50).style("opacity", 1);
+              that.tooltip.transition().duration(50).style("opacity", 1).style("width", 200 + "px");
               that.tooltip
                 .html(
-                  n.data.name +
+                    `<img src='https://image.tmdb.org/t/p/w200/${n.data.poster_path}'>` +
+                    "<b>" +
+                    n.data.name +
+                    "</b>" +
+                    "<br>Year: " +
+                    n.data.year +
                     "<br>Genre: " +
                     n.parent.data.name +
                     "<br>Budget: " +
-                    n.data.value
-                )
-                .style("left", ev.pageX + "px")
-                .style("top", ev.pageY - 100 + "px");
+                    n.data.budget +
+                    "<br>Revenue: " +
+                    n.data.revenue +
+                    "<br>Rating: " +
+                    n.data.vote_average + " (" + n.data.vote_count + " votes)"
+                );
+                const tooltip_rect = that.tooltip
+                    .node()
+                    .getBoundingClientRect();
+              that.tooltip
+                .style("left", Math.min(ev.pageX, $(window).width() - tooltip_rect.width/2 -10) + "px")
+                .style("top", ev.pageY - tooltip_rect.height -10 + "px");
             })
             .on("mousemove", function (ev, n) {
-              that.tooltip
-                .style("left", ev.pageX + "px")
-                .style("top", ev.pageY - 100 + "px");
+                const tooltip_rect = that.tooltip
+                    .node()
+                    .getBoundingClientRect();
+                that.tooltip
+                    .style("left", Math.min(ev.pageX, $(window).width() - tooltip_rect.width/2 -10) + "px")
+                    .style("top", ev.pageY - tooltip_rect.height - 10 + "px");
             })
             .on("mouseout", function (ev, n) {
               d3.select(this).transition().duration("50").attr("opacity", "1");
@@ -123,18 +194,29 @@ class Treemap {
 
           node
             .append("text")
+            .attr("id", "movie-title")
             .text((d) => d.data.name)
-            .attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + 15})`)
             .each(function (d) {
               const self = d3.select(this);
               const maxWidth = d.x1 - d.x0 - 5;
+              let newSize = resizeText(self, maxWidth, 15, 40);
+              // Move the textbox to fit the new size
+              self.attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + newSize})`)
+            })
+            .attr("fill", "white");
+
+          node
+            .append("text")
+            .attr("id","movie-budget")
+            .text((d) => d.data.budget)
+            .each(function (d) {
+              const self = d3.select(this);
+              const maxWidth = d.x1 - d.x0 - 5;
+              let newSize = resizeText(self, maxWidth, 15, 30);
+              // Move the textbox to fit the new size
               let textLength = self.node().getBBox().width;
-              let text = self.text();
-              while (textLength > maxWidth && text.length > 0) {
-                text = text.slice(0, -1);
-                self.text(text + "...");
-                textLength = self.node().getBBox().width;
-              }
+              self.transition().duration(1000)
+                .attr("transform", (d) => `translate(${d.x0 +maxWidth/2 - textLength/2},${d.y1-5})`)
             })
             .attr("fill", "white");
 
@@ -151,20 +233,31 @@ class Treemap {
             .attr("height", (d) => d.y1 - d.y0)
             .attr("fill", (d, i) => this.color(d.parent.data.name));
           update
-            .select("text")
-            .transition()
-            .duration(1000)
-            .attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + 15})`)
+            .select("#movie-title")
             .each(function (d) {
               const self = d3.select(this);
               const maxWidth = d.x1 - d.x0 - 5;
+              // Reset text
+              self.text(d.data.name);
+              // Resize text according to maxWidth
+              let newSize = resizeText(self, maxWidth, 15, 40);
+              // Move the textbox to fit the new size
+              self.transition().duration(1000)
+                .attr("transform", (d) => `translate(${d.x0 + 5},${d.y0 + newSize})`)
+            });
+          update
+            .select("#movie-budget")
+            .each(function (d) {
+              const self = d3.select(this);
+              const maxWidth = d.x1 - d.x0 - 5;
+              // Reset text
+              self.text(d.data.budget);
+              // Resize text according to maxWidth
+              let newSize = resizeText(self, maxWidth, 15, 30);
+              // Move the textbox to fit the new size
               let textLength = self.node().getBBox().width;
-              let text = self.text();
-              while (textLength > maxWidth && text.length > 0) {
-                text = text.slice(0, -1);
-                self.text(text + "...");
-                textLength = self.node().getBBox().width;
-              }
+              self.transition().duration(1000)
+                .attr("transform", (d) => `translate(${d.x0 +maxWidth/2 - textLength/2},${d.y1-5})`)
             });
           return update;
         }
@@ -172,9 +265,48 @@ class Treemap {
   }
 }
 
+// Fit text into maxWidth while using the largest fontsize between minSize and maxSize
+// If the text does not fit with minSize, add ellipsis
+function resizeText(textElement, maxWidth, minSize, maxSize){
+  let text = textElement.text();
+  let fontSize = maxSize;
+  textElement.style('font-size', fontSize + "px");
+  let textLength = textElement.node().getBBox().width;
+  while (textLength > maxWidth && fontSize > minSize){
+    textElement.style('font-size', fontSize + "px");
+    textLength = textElement.node().getBBox().width;
+    fontSize--;
+  }
+  while (textLength > maxWidth && text.length > 0) {
+    text = text.slice(0, -1);
+    textElement.text(text + "...");
+    textLength = textElement.node().getBBox().width;
+  }
+  return fontSize;
+}
+
+function format_money(value) {
+  if (value === 0){
+    return "-";
+  }
+  if (value >= 1e9) {
+    return "$" + parseFloat((value / 1e9).toFixed(2)) + "B";
+  } else {
+    if (value >= 1e6) {
+      return "$" + parseFloat((value / 1e6).toFixed(2)) + "M";
+    } else {
+      if (value >= 1e3) {
+        return "$" + parseFloat((value / 1e3).toFixed(2)) + "K";
+      } else {
+        return "$" + parseFloat(value.toFixed(2));
+      }
+    }
+  }
+}
+
 $(document).ready(function () {
   window.name = "Tom Cruise";
-  const treemap = new Treemap("#treemap");
+  const treemap = new Treemap("#treemap", "#treemap-legend");
   treemap.getData().then(() => treemap.draw(window.name));
   window.reloadTreemap = (name) => {
     treemap.update(name);
