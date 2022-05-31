@@ -42,36 +42,33 @@
       <div class="w-1/2 flex flex-col justify-center">
         <div id="network" class="h-full shadow-md rounded-md bg-white"></div>
       </div>
-      <div class="w-1/2">
-        <div class="h-1/2 text-md bg-white">
 
+      <div class="w-1/2">
+        <!--Actor stats-->
+        <div class="h-1/2 text-md bg-white">
               <div class="h-2/3 flex flex-row">
-                <div class="w-1/2 flex flex-col">
-                  <p class="text-xl font-bold">
-                    <span class="actor-name"></span>
-                  </p>
-                  <div id="actor-stats" class="h-full flex flex-col">
-                    <!-- <p class="w-1/2">Number of films: 50</p>
-                    <p class="w-1/2">Average rating: 4.3</p>
-                    <p class="w-1/2">Average budget: 10.2M $</p>
-                    <p class="w-1/2">Total budget: 353M $</p>
-                    <p class="w-1/2">etc...</p> -->
+                <div class="w-3/4 flex flex-row">
+                  <div class="w-1/2 h-full flex-col">
+                    <p class="text-xl font-bold">
+                      <span class="actor-name"></span>
+                    </p>
+                    <div id="actor-stats" class="h-full flex flex-col"></div>
                   </div>
-                  
+                  <div class="w-1/2 h-full flex-col">
+                    <div id="actor-stats-plot" class="h-full flex flex-col">
+
+                    </div>
+                  </div>
                 </div>
-                <div id="actor-image" class="w-1/2 flex justify-center"> 
-                  
-                </div>
+                <!--Actor image on the right-->
+                <div id="actor-image" class="w-1/4 flex justify-center"></div>
               </div>
-          
+          <!--Movie releases-->
           <div class="h-1/3">
             <div class="h-full flex" id="releases"></div>
-            <!-- <img class="w-full" src="img/nbofmovies.jpeg" /> -->
-          </div>
-          <div class="h-1/3 p-2">
-            <div class="h-full" id="releases"></div>
           </div>
         </div>
+        <!--Treemap-->
         <div class="h-2/3 shadow-md rounded-md bg-white p-2 flex flex-col">
           <div class="h-12" id="treemap-legend"></div>
           <div class="grow" id="treemap"></div>
