@@ -28,3 +28,13 @@
 .search-results > button:hover {
   background-color: lightblue;
 }
+
+.button_stat{
+  color: black;
+  border-radius: 8px;
+  transition-duration: 0.2s;
+}
+
+.button_stat:hover{
+  color: white;
+}
