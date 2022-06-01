@@ -4,15 +4,25 @@ window.showStats = (name) => {
   $("#actor-stats").find("*").remove();
   $("#actor-image").find("*").remove();
 
-  const stats_graph = new HorizontalMovieBar("#actor-stats");
-  stats_graph.draw(name);
-
+  document.getElementById("button_releases").onclick = function(){
+    /*const graph = new TimeBarChart("#actor-stats");
+    graph.draw(name);*/
+    window.updateStats(name);
+  }
   document.getElementById("button_movies").onclick = function(){
     const stats_graph = new HorizontalMovieBar("#actor-stats");
     stats_graph.draw(name);
   }
   document.getElementById("button_rating").onclick = function(){
     const stats_graph = new HorizontalRatingBar("#actor-stats");
+    stats_graph.draw(name);
+  }
+  document.getElementById("button_budget").onclick = function(){
+    const stats_graph = new HorizontalBudgetBar("#actor-stats");
+    stats_graph.draw(name);
+  }
+  document.getElementById("button_revenue").onclick = function(){
+    const stats_graph = new HorizontalRevenueBar("#actor-stats");
     stats_graph.draw(name);
   }
 
@@ -95,12 +105,28 @@ class TimeBarChart {
       .attr("width", width)
       .attr("height", height);
 
-    this.svg
+    /*this.svg
       .append("text")
       .attr("x", width / 2)
       .attr("y", 18)
       .text("Number of movies per year")
       .attr("text-anchor", "middle");
+    */
+
+    // create tooltip element  
+    const tooltip = d3.select("body")
+    .append("div")
+    .attr("class","d3-tooltip")
+    .style("position", "absolute")
+    .style("z-index", "10")
+    .style("visibility", "hidden")
+    .style("padding", "15px")
+    .style("background", "rgba(0,0,0,0.6)")
+    .style("border-radius", "5px")
+    .style("color", "#fff")
+    .text("a simple tooltip");
+
+    const bar_color = "#4da6ff"
 
     this.svg
       .selectAll("rect")
@@ -116,8 +142,22 @@ class TimeBarChart {
       .attr("height", function (d) {
         return height - yS(d.title) - margin.bottom;
       })
-      .attr("fill", "#1a75ff")
-      .style("transform", "translateX(-5px)");
+      .attr("fill", bar_color)
+      .style("transform", "translateX(-5px)")
+      .on("mouseover", function(ev, d) {
+        tooltip.html(`Movie releases: ${d.title}`).style("visibility", "visible");
+        d3.select(this)
+          .attr("fill", "#004d99");
+      })
+      .on("mousemove", function(event){
+        tooltip
+          .style("top", (event.pageY-10)+"px")
+          .style("left",(event.pageX+10)+"px");
+      })
+      .on("mouseout", function() {
+        tooltip.html(``).style("visibility", "hidden");
+        d3.select(this).attr("fill", bar_color);
+      });
 
     this.xAxis = d3.axisBottom(this.xScale).ticks(8).tickFormat(d3.format("d"));
     this.svg
@@ -140,7 +180,7 @@ const margin_horizontal = {
   top: 30,
   right: 30,
   bottom: 20,
-  left:90,
+  left:60,
 };
 
 const avg_total_movies = 33.20
@@ -160,7 +200,7 @@ class HorizontalMovieBar{
 
     let actor_data = window.stats[name];
 
-    this.data = [{actor: "Others", count: avg_total_movies}, {actor: name, count: actor_data["Total movies"]}];
+    this.data = [{actor: "Average", count: avg_total_movies}, {actor: name, count: actor_data["Total movies"]}];
 
 
     d3.select(window).on("resize.horizontalbar", () => {
@@ -203,7 +243,7 @@ class HorizontalMovieBar{
      .style("color", "#fff")
      .text("a simple tooltip");
 
-    const bar_color = "#4da6ff"
+    const bar_color = "#80ffaa"
 
     this.svg
       .selectAll("rect")
@@ -220,11 +260,11 @@ class HorizontalMovieBar{
       })
       .attr("height", "15px")
       .attr("fill", bar_color)
-      .style("transform", "translateY(8px)")
+      .style("transform", "translateY(22px)")
       .on("mouseover", function(ev, d) {
         tooltip.html(`Movies: ${d.count}`).style("visibility", "visible");
         d3.select(this)
-          .attr("fill", "#004d99");
+          .attr("fill", "#00cc44");
       })
       .on("mousemove", function(event){
         tooltip
@@ -236,7 +276,7 @@ class HorizontalMovieBar{
         d3.select(this).attr("fill", bar_color);
       });
 
-    this.xAxis = d3.axisBottom(this.xScale).ticks(4).tickFormat(d3.format("d"));
+    this.xAxis = d3.axisBottom(this.xScale).ticks(8).tickFormat(d3.format("d"));
     this.svg
       .append("g")
       .attr("transform", "translate(0," + (height - margin_horizontal.bottom) + ")")
@@ -266,7 +306,7 @@ class HorizontalRatingBar{
 
     let actor_data = window.stats[name];
 
-    this.data = [{actor: "Others", count: avg_total_rating}, {actor: name, count: actor_data["Average rating"]}];
+    this.data = [{actor: "Average", count: avg_total_rating}, {actor: name, count: actor_data["Average rating"]}];
 
 
     d3.select(window).on("resize.horizontalbar", () => {
@@ -323,7 +363,7 @@ class HorizontalRatingBar{
       })
       .attr("height", "15px")
       .attr("fill", bar_color)
-      .style("transform", "translateY(8px)")
+      .style("transform", "translateY(22px)")
       .on("mouseover", function(ev, d) {
         tooltip.html(`Average rating: ${d.count}`).style("visibility", "visible");
         d3.select(this)
@@ -339,7 +379,243 @@ class HorizontalRatingBar{
         d3.select(this).attr("fill", bar_color);
       });
 
-    this.xAxis = d3.axisBottom(this.xScale).ticks(4).tickFormat(d3.format("d"));
+    this.xAxis = d3.axisBottom(this.xScale).ticks(8).tickFormat(d3.format("d"));
+    this.svg
+      .append("g")
+      .attr("transform", "translate(0," + (height - margin_horizontal.bottom) + ")")
+      .call(this.xAxis);
+
+    this.yAxis = d3.axisLeft(this.yScale).ticks(2);
+
+    this.svg
+      .append("g")
+      .attr("transform", "translate(" + margin_horizontal.left + ",0)")
+      .call(this.yAxis);
+
+  }
+
+}
+
+function format_money(value) {
+  if (value === 0){
+    return "-";
+  }
+  if (value >= 1e9) {
+    return "$" + parseFloat((value / 1e9).toFixed(2)) + "B";
+  } else {
+    if (value >= 1e6) {
+      return "$" + parseFloat((value / 1e6).toFixed(2)) + "M";
+    } else {
+      if (value >= 1e3) {
+        return "$" + parseFloat((value / 1e3).toFixed(2)) + "K";
+      } else {
+        return "$" + parseFloat(value.toFixed(2));
+      }
+    }
+  }
+}
+
+function money_to_value(money){
+  money = money.slice(1)
+  if (money.charAt(money.length-1) == "M") {
+    return parseFloat(money.slice(0,-1))*1e6
+  } else if(money.charAt(money.length-1) == "B") {
+    return parseFloat(money.slice(0,-1))*1e9
+  } else {
+    return parseFloat(money.slice(0,-1))*1e3
+  }
+}
+
+const avg_budget = "$11.35M"
+
+class HorizontalBudgetBar{
+
+  constructor(container) {
+    this.container = d3.select(container);
+  }
+
+  draw(name) {
+    this.container.select("*").remove();
+    const { height, width } = this.container.node().getBoundingClientRect();
+
+    let actor_data = window.stats[name];
+
+    this.data = [{actor: "Average", value: avg_budget}, {actor: name, value: actor_data["Average budget"]}];
+
+    d3.select(window).on("resize.horizontalbar", () => {
+      this.draw(name);
+    });
+
+    this.xScale = d3
+      .scaleLinear()
+      .domain([0, d3.max(this.data.map(function (d) {return money_to_value(d.value)}))])
+      .range([margin_horizontal.left, width - margin_horizontal.right]);  
+
+    // Bound yScale using minDataPoint and maxDataPoint
+    this.yScale = d3
+      .scaleBand()
+      .range([height - margin_horizontal.bottom, margin_horizontal.top])
+      .domain(this.data.map(function (d) {return d.actor}));
+      
+    let xS = this.xScale;
+    let yS = this.yScale;
+
+    // Add the chart to the HTML page
+    this.svg = this.container
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+     // create tooltip element  
+     const tooltip = d3.select("body")
+     .append("div")
+     .attr("class","d3-tooltip")
+     .style("position", "absolute")
+     .style("z-index", "10")
+     .style("visibility", "hidden")
+     .style("padding", "15px")
+     .style("background", "rgba(0,0,0,0.6)")
+     .style("border-radius", "5px")
+     .style("color", "#fff")
+     .text("a simple tooltip");
+
+    const bar_color = "lightgray"
+
+    this.svg
+      .selectAll("rect")
+      .data(this.data)
+      .join("rect")
+      .attr("y", function (d) {
+        return yS(d.actor);
+      })
+      .attr("x", function (d) {
+        return margin_horizontal.left;
+      })
+      .attr("width", function (d) {
+        return xS(money_to_value(d.value))-margin_horizontal.left;
+      })
+      .attr("height", "15px")
+      .attr("fill", bar_color)
+      .style("transform", "translateY(22px)")
+      .on("mouseover", function(ev, d) {
+        tooltip.html(`Average budget: ${d.value}`).style("visibility", "visible");
+        d3.select(this)
+          .attr("fill", "#808080");
+      })
+      .on("mousemove", function(event){
+        tooltip
+          .style("top", (event.pageY-10)+"px")
+          .style("left",(event.pageX+10)+"px");
+      })
+      .on("mouseout", function() {
+        tooltip.html(``).style("visibility", "hidden");
+        d3.select(this).attr("fill", bar_color);
+      });
+
+    this.xAxis = d3.axisBottom(this.xScale).ticks(8).tickFormat(d => `${format_money(d)}`);
+    this.svg
+      .append("g")
+      .attr("transform", "translate(0," + (height - margin_horizontal.bottom) + ")")
+      .call(this.xAxis);
+
+    this.yAxis = d3.axisLeft(this.yScale).ticks(2);
+
+    this.svg
+      .append("g")
+      .attr("transform", "translate(" + margin_horizontal.left + ",0)")
+      .call(this.yAxis);
+
+  }
+
+}
+
+const avg_revenue = "$33.45M"
+
+class HorizontalRevenueBar{
+
+  constructor(container) {
+    this.container = d3.select(container);
+  }
+
+  draw(name) {
+    this.container.select("*").remove();
+    const { height, width } = this.container.node().getBoundingClientRect();
+
+    let actor_data = window.stats[name];
+
+    this.data = [{actor: "Average", value: avg_revenue}, {actor: name, value: actor_data["Average revenue"]}];
+
+    d3.select(window).on("resize.horizontalbar", () => {
+      this.draw(name);
+    });
+
+    this.xScale = d3
+      .scaleLinear()
+      .domain([0, d3.max(this.data.map(function (d) {return money_to_value(d.value)}))])
+      .range([margin_horizontal.left, width - margin_horizontal.right]);  
+
+    // Bound yScale using minDataPoint and maxDataPoint
+    this.yScale = d3
+      .scaleBand()
+      .range([height - margin_horizontal.bottom, margin_horizontal.top])
+      .domain(this.data.map(function (d) {return d.actor}));
+      
+    let xS = this.xScale;
+    let yS = this.yScale;
+
+    // Add the chart to the HTML page
+    this.svg = this.container
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+     // create tooltip element  
+     const tooltip = d3.select("body")
+     .append("div")
+     .attr("class","d3-tooltip")
+     .style("position", "absolute")
+     .style("z-index", "10")
+     .style("visibility", "hidden")
+     .style("padding", "15px")
+     .style("background", "rgba(0,0,0,0.6)")
+     .style("border-radius", "5px")
+     .style("color", "#fff")
+     .text("a simple tooltip");
+
+    const bar_color = "#ff8566"
+
+    this.svg
+      .selectAll("rect")
+      .data(this.data)
+      .join("rect")
+      .attr("y", function (d) {
+        return yS(d.actor);
+      })
+      .attr("x", function (d) {
+        return margin_horizontal.left;
+      })
+      .attr("width", function (d) {
+        return xS(money_to_value(d.value))-margin_horizontal.left;
+      })
+      .attr("height", "15px")
+      .attr("fill", bar_color)
+      .style("transform", "translateY(22px)")
+      .on("mouseover", function(ev, d) {
+        tooltip.html(`Average revenue: ${d.value}`).style("visibility", "visible");
+        d3.select(this)
+          .attr("fill", "#ff471a");
+      })
+      .on("mousemove", function(event){
+        tooltip
+          .style("top", (event.pageY-10)+"px")
+          .style("left",(event.pageX+10)+"px");
+      })
+      .on("mouseout", function() {
+        tooltip.html(``).style("visibility", "hidden");
+        d3.select(this).attr("fill", bar_color);
+      });
+
+    this.xAxis = d3.axisBottom(this.xScale).ticks(4).tickFormat(d => `${format_money(d)}`);
     this.svg
       .append("g")
       .attr("transform", "translate(0," + (height - margin_horizontal.bottom) + ")")
@@ -358,8 +634,6 @@ class HorizontalRatingBar{
 
 
 
-
-
 $(document).ready(function () {
 
   d3.json("data/actors_stats.json").then((data) => {
@@ -371,12 +645,12 @@ $(document).ready(function () {
   d3.json("data/actors_releases_per_year.json").then((data) => {
     window.releasesData = data.data;
 
-    const graph = new TimeBarChart("#releases");
+    const graph = new TimeBarChart("#actor-stats");
     graph.draw(window.name);
 
     window.updateStats = (name) => {
       graph.draw(name);
-    }; 
+    };
 
   });
 });

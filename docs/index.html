@@ -46,16 +46,17 @@
       <div class="w-1/2">
         <!--Actor stats-->
         <div class="h-1/2 text-md bg-white">
-              <div class="h-2/3 flex flex-row">
+              <div class="h-full flex flex-row">
                 
                 <div class="w-3/4 flex flex-col">
                   <p class="text-xl font-bold">
                     <span class="actor-name"></span>
                   </p>
-                  <div id="stats-buttons" class="w-full flex flex-row">
-                    <button id="button_movies" class="button_stat" style="background-color: #4da6ff; border: 3px solid #4da6ff;">Total movies</button>
+                  <div id="stats-buttons" class=" h-1/4 text-sm flex flex-row">
+                    <button id="button_releases" class="button_stat" style="background-color: #4da6ff; border: 3px solid #4da6ff;">Movie releases</button>
+                    <button id="button_movies" class="button_stat" style="background-color: #80ffaa; border: 3px solid #80ffaa;">Total movies</button>
                     <button id="button_rating" class="button_stat" style="background-color: #ffc266; border: 3px solid #ffc266;">Average rating</button>
-                    <button id="button_budget" class="button_stat" style="background-color: #85e085; border: 3px solid #85e085;">Average budget</button>
+                    <button id="button_budget" class="button_stat" style="background-color: lightgray; border: 3px solid lightgray;">Average budget</button>
                     <button id="button_revenue" class="button_stat" style="background-color: #ff8566; border: 3px solid #ff8566;">Average revenue</button>
                   </div>
                   <div id="actor-stats" class="h-full"> 
@@ -74,10 +75,10 @@
                 <!--Actor image on the right-->
                 <div id="actor-image" class="w-1/4 flex justify-center"></div>
               </div>
-          <!--Movie releases-->
+          <!--Movie releases
           <div class="h-1/3">
             <div class="h-full flex" id="releases"></div>
-          </div>
+          </div>-->
         </div>
         <!--Treemap-->
         <div class="h-2/3 shadow-md rounded-md bg-white p-2 flex flex-col">
