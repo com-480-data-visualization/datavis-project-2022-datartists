@@ -2,7 +2,6 @@ class NetworkGraph {
   constructor(container, name) {
     this.container = d3.select(container);
     this.name = name;
-    d3.select(".actor-name").html(name);
 
     this.weightScale = d3.scaleSqrt().domain([1, 15]).range([5, 30]);
 

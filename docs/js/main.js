@@ -82,6 +82,7 @@ const showStats = (name) => {
 $(document).ready(function () {
   setupSearchBar();
   const name = "Tom Cruise";
+  d3.select(".actor-name").html(name);
   const treemap = new Treemap("#treemap", "#treemap-legend", name);
   const network = new NetworkGraph("#network", name);
   showStats(name);
