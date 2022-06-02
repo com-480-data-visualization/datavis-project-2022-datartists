@@ -51,7 +51,7 @@ class Treemap {
       .map(([genre, _]) => genre);
     usedGenres.forEach((d) => {
       $("#treemap-legend").append(
-        `<div class="flex flex-row items-center mr-2"><div class="w-4 h-4 mr-1" style="background-color: ${this.color(
+        `<div class="flex flex-row items-center mr-2 shrink-0"><div class="w-4 h-4 mr-1" style="background-color: ${this.color(
           d
         )}"></div><div>${d}</div></div>`
       );
