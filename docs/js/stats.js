@@ -1,47 +1,3 @@
-window.showStats = (name) => {
-  const actor_stats = window.stats[name];
-
-  $("#actor-stats").find("*").remove();
-  $("#actor-image").find("*").remove();
-
-  document.getElementById("button_releases").onclick = function(){
-    /*const graph = new TimeBarChart("#actor-stats");
-    graph.draw(name);*/
-    window.updateStats(name);
-  }
-  document.getElementById("button_movies").onclick = function(){
-    const stats_graph = new HorizontalMovieBar("#actor-stats");
-    stats_graph.draw(name);
-  }
-  document.getElementById("button_rating").onclick = function(){
-    const stats_graph = new HorizontalRatingBar("#actor-stats");
-    stats_graph.draw(name);
-  }
-  document.getElementById("button_budget").onclick = function(){
-    const stats_graph = new HorizontalBudgetBar("#actor-stats");
-    stats_graph.draw(name);
-  }
-  document.getElementById("button_revenue").onclick = function(){
-    const stats_graph = new HorizontalRevenueBar("#actor-stats");
-    stats_graph.draw(name);
-  }
-
-  //const stat_elements = ["Total movies", "Average rating", "Average budget", "Average revenue"]
-  for (const key in actor_stats) {
-    /*if (stat_elements.includes(key)) {
-      $("#actor-stats").append(
-        `<p class="h-1/2">${key}: ${actor_stats[key]}</p>`
-      );
-    }*/
-    if (key == "profile_path"){
-      $("#actor-image").append(
-        `<img src="https://image.tmdb.org/t/p/original/${actor_stats[key]}"></img>`
-      );
-    }
-  }
-};
-
-
 const margin = {
   top: 30,
   right: 30,
@@ -50,21 +6,56 @@ const margin = {
 };
 
 class TimeBarChart {
-  constructor(container) {
+  constructor(container, actorName) {
     this.container = d3.select(container);
+    this.name = actorName;
+    d3.json("data/actors_releases_per_year.json").then((data) => {
+      this.releasesData = data.data;
+      this.draw();
+      this.show();
+    });
   }
 
-  draw(name) {
-    this.container.select("*").remove();
+  show() {
+    this.svg.style("display", "block");
+  }
+
+  draw() {
+    // Add the chart to the HTML page
+    this.svg = this.container.append("svg").style("display", "none");
+
+    // create tooltip element
+    this.tooltip = this.container
+      .append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+
+    this.xAxis = this.svg.append("g");
+
+    this.yAxis = this.svg.append("g");
+
+    this.draw_bars();
+  }
+
+  update(name) {
+    this.name = name;
+    this.draw_bars();
+  }
+
+  draw_bars() {
+    const that = this;
     const { height, width } = this.container.node().getBoundingClientRect();
 
-    this.data = window.releasesData.filter((d) => d.actor === name);
+    this.data = this.releasesData.filter((d) => d.actor === this.name);
 
     d3.select(window).on("resize.timebar", () => {
-      this.draw(name);
+      this.draw_bars();
+      if (this.svg.style("display") === "block") {
+        this.show();
+      }
     });
 
-    this.xScale = d3
+    const xS = d3
       .scaleLinear()
       .range([margin.left, width - margin.right])
       .domain([
@@ -76,10 +67,8 @@ class TimeBarChart {
         2018,
       ]);
 
-    // console.log(this.xScale(1999));
-
     // Bound yScale using minDataPoint and maxDataPoint
-    this.yScale = d3
+    const yS = d3
       .scaleLinear()
       .range([height - margin.bottom, margin.top])
       .domain([
@@ -90,43 +79,14 @@ class TimeBarChart {
           })
         ),
       ]);
-    let xS = this.xScale;
-    let yS = this.yScale;
+
+    this.svg.attr("width", width).attr("height", height);
 
     /*   
         Create the chart.  
         Here we use 'curveLinear' interpolation.  
         Play with the other ones: 'curveBasis', 'curveCardinal', 'curveStepBefore'.  
         */
-
-    // Add the chart to the HTML page
-    this.svg = this.container
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
-
-    /*this.svg
-      .append("text")
-      .attr("x", width / 2)
-      .attr("y", 18)
-      .text("Number of movies per year")
-      .attr("text-anchor", "middle");
-    */
-
-    // create tooltip element  
-    const tooltip = d3.select("body")
-    .append("div")
-    .attr("class","d3-tooltip")
-    .style("position", "absolute")
-    .style("z-index", "10")
-    .style("visibility", "hidden")
-    .style("padding", "15px")
-    .style("background", "rgba(0,0,0,0.6)")
-    .style("border-radius", "5px")
-    .style("color", "#fff")
-    .text("a simple tooltip");
-
-    const bar_color = "#4da6ff"
 
     this.svg
       .selectAll("rect")
@@ -142,35 +102,46 @@ class TimeBarChart {
       .attr("height", function (d) {
         return height - yS(d.title) - margin.bottom;
       })
-      .attr("fill", bar_color)
+      .attr("fill", "#3b83f6")
       .style("transform", "translateX(-5px)")
-      .on("mouseover", function(ev, d) {
-        tooltip.html(`Movie releases: ${d.title}`).style("visibility", "visible");
+      .on("mouseover", function (ev, d) {
+        that.tooltip.transition().duration(50).style("opacity", 1);
+        that.tooltip.html(`Movie releases: ${d.title}`);
         d3.select(this)
-          .attr("fill", "#004d99");
+          .transition()
+          .duration("50")
+          .attr("filter", "brightness(60%)");
+
+        const { height } = that.tooltip.node().getBoundingClientRect();
+        that.tooltip
+          .style("left", ev.pageX + "px")
+          .style("top", ev.pageY - height - 10 + "px");
       })
-      .on("mousemove", function(event){
-        tooltip
-          .style("top", (event.pageY-10)+"px")
-          .style("left",(event.pageX+10)+"px");
+      .on("mousemove", function (ev) {
+        const { height } = that.tooltip.node().getBoundingClientRect();
+        that.tooltip
+          .style("left", ev.pageX + "px")
+          .style("top", ev.pageY - height - 10 + "px");
       })
-      .on("mouseout", function() {
-        tooltip.html(``).style("visibility", "hidden");
-        d3.select(this).attr("fill", bar_color);
+      .on("mouseout", function () {
+        that.tooltip.transition().duration(50).style("opacity", 0);
+        d3.select(this)
+          .transition()
+          .duration("50")
+          .attr("filter", "brightness(100%)");
       });
 
-    this.xAxis = d3.axisBottom(this.xScale).ticks(8).tickFormat(d3.format("d"));
-    this.svg
-      .append("g")
+    const xAxis = d3.axisBottom(xS).ticks(8).tickFormat(d3.format("d"));
+
+    this.xAxis
       .attr("transform", "translate(0," + (height - margin.bottom) + ")")
-      .call(this.xAxis);
+      .call(xAxis);
 
-    this.yAxis = d3.axisLeft(this.yScale).ticks(4);
+    const yAxis = d3.axisLeft(yS).ticks(4);
 
-    this.svg
-      .append("g")
+    this.yAxis
       .attr("transform", "translate(" + margin.left + ",0)")
-      .call(this.yAxis);
+      .call(yAxis);
   }
 }
 
@@ -180,70 +151,103 @@ const margin_horizontal = {
   top: 30,
   right: 30,
   bottom: 20,
-  left:60,
+  left: 60,
 };
-
-const avg_total_movies = 33.20
 
 /*
  * Horizontal Bar Chart for actor stats
- */ 
-class HorizontalMovieBar{
-
-  constructor(container) {
+ */
+class ComparisonBars {
+  constructor(
+    container,
+    actorName,
+    statName,
+    avgValue,
+    format = d3.format("d"),
+    widthFormat = (v) => v
+  ) {
     this.container = d3.select(container);
+    this.name = actorName;
+    this.statName = statName;
+    this.avgValue = avgValue;
+    this.format = format;
+    this.widthFormat = widthFormat;
+    d3.json("data/actors_stats.json").then((data) => {
+      this.stats = data;
+      this.draw();
+    });
   }
 
-  draw(name) {
-    this.container.select("*").remove();
+  show() {
+    this.svg.style("display", "block");
+  }
+
+  draw() {
+    // Add the chart to the HTML page
+    this.svg = this.container
+      .append("svg")
+      .style("display", "none")
+      .attr("id", this.statName.split(" ").join("_"));
+
+    // create tooltip element
+    this.tooltip = this.container
+      .append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+
+    this.xAxis = this.svg.append("g");
+
+    this.yAxis = this.svg.append("g");
+
+    this.draw_bars();
+  }
+
+  update(name) {
+    this.name = name;
+    this.draw_bars();
+  }
+
+  draw_bars() {
+    const that = this;
     const { height, width } = this.container.node().getBoundingClientRect();
 
-    let actor_data = window.stats[name];
+    this.data = [
+      { actor: "Average", count: this.avgValue },
+      { actor: this.name, count: this.stats[this.name][this.statName] },
+    ];
 
-    this.data = [{actor: "Average", count: avg_total_movies}, {actor: name, count: actor_data["Total movies"]}];
-
-
-    d3.select(window).on("resize.horizontalbar", () => {
-      this.draw(name);
+    d3.select(window).on("resize." + this.statName.split(" ").join("_"), () => {
+      this.draw_bars();
+      if (this.svg.style("display") === "block") {
+        this.show();
+      }
     });
 
-    this.xScale = d3
+    const xS = d3
       .scaleLinear()
-      .domain([20, d3.max(this.data.map(function (d) {
-        return d.count;
-        }))
+      .domain([
+        0,
+        d3.max(
+          this.data.map(function (d) {
+            return that.widthFormat(d.count);
+          })
+        ),
       ])
-      .range([margin_horizontal.left, width - margin_horizontal.right]);  
+      .range([margin_horizontal.left, width - margin_horizontal.right]);
 
     // Bound yScale using minDataPoint and maxDataPoint
-    this.yScale = d3
+    const yS = d3
       .scaleBand()
       .range([height - margin_horizontal.bottom, margin_horizontal.top])
-      .domain(this.data.map(function (d) {return d.actor}));
-      
-    let xS = this.xScale;
-    let yS = this.yScale;
+      .domain(
+        this.data.map(function (d) {
+          return d.actor;
+        })
+      )
+      .padding(0.5);
 
     // Add the chart to the HTML page
-    this.svg = this.container
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
-
-     // create tooltip element  
-     const tooltip = d3.select("body")
-     .append("div")
-     .attr("class","d3-tooltip")
-     .style("position", "absolute")
-     .style("z-index", "10")
-     .style("visibility", "hidden")
-     .style("padding", "15px")
-     .style("background", "rgba(0,0,0,0.6)")
-     .style("border-radius", "5px")
-     .style("color", "#fff")
-     .text("a simple tooltip");
-
-    const bar_color = "#80ffaa"
+    this.svg.attr("width", width).attr("height", height);
 
     this.svg
       .selectAll("rect")
@@ -256,148 +260,54 @@ class HorizontalMovieBar{
         return margin_horizontal.left;
       })
       .attr("width", function (d) {
-        return xS(d.count)-margin_horizontal.left;
+        return xS(that.widthFormat(d.count)) - margin_horizontal.left;
       })
-      .attr("height", "15px")
-      .attr("fill", bar_color)
-      .style("transform", "translateY(22px)")
-      .on("mouseover", function(ev, d) {
-        tooltip.html(`Movies: ${d.count}`).style("visibility", "visible");
+      .attr("height", yS.bandwidth())
+      .attr("fill", (d) => (d.actor == "Average" ? "lightgray" : "#3b83f6"))
+      .on("mouseover", function (ev, d) {
+        that.tooltip.transition().duration(50).style("opacity", 1);
+        that.tooltip.html(`${that.statName}: ${d.count}`);
         d3.select(this)
-          .attr("fill", "#00cc44");
+          .transition()
+          .duration("50")
+          .attr("filter", "brightness(60%)");
+
+        const { height } = that.tooltip.node().getBoundingClientRect();
+        that.tooltip
+          .style("left", ev.pageX + "px")
+          .style("top", ev.pageY - height - 10 + "px");
       })
-      .on("mousemove", function(event){
-        tooltip
-          .style("top", (event.pageY-10)+"px")
-          .style("left",(event.pageX+10)+"px");
+      .on("mousemove", function (ev) {
+        const { height } = that.tooltip.node().getBoundingClientRect();
+        that.tooltip
+          .style("left", ev.pageX + "px")
+          .style("top", ev.pageY - height - 10 + "px");
       })
-      .on("mouseout", function() {
-        tooltip.html(``).style("visibility", "hidden");
-        d3.select(this).attr("fill", bar_color);
+      .on("mouseout", function () {
+        that.tooltip.transition().duration(50).style("opacity", 0);
+        d3.select(this)
+          .transition()
+          .duration("50")
+          .attr("filter", "brightness(100%)");
       });
 
-    this.xAxis = d3.axisBottom(this.xScale).ticks(8).tickFormat(d3.format("d"));
-    this.svg
-      .append("g")
-      .attr("transform", "translate(0," + (height - margin_horizontal.bottom) + ")")
-      .call(this.xAxis);
+    const xAxis = d3.axisBottom(xS).ticks(8).tickFormat(this.format);
+    this.xAxis
+      .attr(
+        "transform",
+        "translate(0," + (height - margin_horizontal.bottom) + ")"
+      )
+      .call(xAxis);
 
-    this.yAxis = d3.axisLeft(this.yScale).ticks(2);
-
-    this.svg
-      .append("g")
+    const yAxis = d3.axisLeft(yS);
+    this.yAxis
       .attr("transform", "translate(" + margin_horizontal.left + ",0)")
-      .call(this.yAxis);
+      .call(yAxis);
   }
-
-}
-
-const avg_total_rating = 5.84
-
-class HorizontalRatingBar{
-
-  constructor(container) {
-    this.container = d3.select(container);
-  }
-
-  draw(name) {
-    this.container.select("*").remove();
-    const { height, width } = this.container.node().getBoundingClientRect();
-
-    let actor_data = window.stats[name];
-
-    this.data = [{actor: "Average", count: avg_total_rating}, {actor: name, count: actor_data["Average rating"]}];
-
-
-    d3.select(window).on("resize.horizontalbar", () => {
-      this.draw(name);
-    });
-
-    this.xScale = d3
-      .scaleLinear()
-      .domain([0, 10])
-      .range([margin_horizontal.left, width - margin_horizontal.right]);  
-
-    // Bound yScale using minDataPoint and maxDataPoint
-    this.yScale = d3
-      .scaleBand()
-      .range([height - margin_horizontal.bottom, margin_horizontal.top])
-      .domain(this.data.map(function (d) {return d.actor}));
-      
-    let xS = this.xScale;
-    let yS = this.yScale;
-
-    // Add the chart to the HTML page
-    this.svg = this.container
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
-
-     // create tooltip element  
-     const tooltip = d3.select("body")
-     .append("div")
-     .attr("class","d3-tooltip")
-     .style("position", "absolute")
-     .style("z-index", "10")
-     .style("visibility", "hidden")
-     .style("padding", "15px")
-     .style("background", "rgba(0,0,0,0.6)")
-     .style("border-radius", "5px")
-     .style("color", "#fff")
-     .text("a simple tooltip");
-
-    const bar_color = "#ffc266"
-
-    this.svg
-      .selectAll("rect")
-      .data(this.data)
-      .join("rect")
-      .attr("y", function (d) {
-        return yS(d.actor);
-      })
-      .attr("x", function (d) {
-        return margin_horizontal.left;
-      })
-      .attr("width", function (d) {
-        return xS(d.count)-margin_horizontal.left;
-      })
-      .attr("height", "15px")
-      .attr("fill", bar_color)
-      .style("transform", "translateY(22px)")
-      .on("mouseover", function(ev, d) {
-        tooltip.html(`Average rating: ${d.count}`).style("visibility", "visible");
-        d3.select(this)
-          .attr("fill", "#e68a00");
-      })
-      .on("mousemove", function(event){
-        tooltip
-          .style("top", (event.pageY-10)+"px")
-          .style("left",(event.pageX+10)+"px");
-      })
-      .on("mouseout", function() {
-        tooltip.html(``).style("visibility", "hidden");
-        d3.select(this).attr("fill", bar_color);
-      });
-
-    this.xAxis = d3.axisBottom(this.xScale).ticks(8).tickFormat(d3.format("d"));
-    this.svg
-      .append("g")
-      .attr("transform", "translate(0," + (height - margin_horizontal.bottom) + ")")
-      .call(this.xAxis);
-
-    this.yAxis = d3.axisLeft(this.yScale).ticks(2);
-
-    this.svg
-      .append("g")
-      .attr("transform", "translate(" + margin_horizontal.left + ",0)")
-      .call(this.yAxis);
-
-  }
-
 }
 
 function format_money(value) {
-  if (value === 0){
+  if (value === 0) {
     return "-";
   }
   if (value >= 1e9) {
@@ -415,242 +325,13 @@ function format_money(value) {
   }
 }
 
-function money_to_value(money){
-  money = money.slice(1)
-  if (money.charAt(money.length-1) == "M") {
-    return parseFloat(money.slice(0,-1))*1e6
-  } else if(money.charAt(money.length-1) == "B") {
-    return parseFloat(money.slice(0,-1))*1e9
+function money_to_value(money) {
+  money = money.slice(1);
+  if (money.charAt(money.length - 1) == "M") {
+    return parseFloat(money.slice(0, -1)) * 1e6;
+  } else if (money.charAt(money.length - 1) == "B") {
+    return parseFloat(money.slice(0, -1)) * 1e9;
   } else {
-    return parseFloat(money.slice(0,-1))*1e3
+    return parseFloat(money.slice(0, -1)) * 1e3;
   }
 }
-
-const avg_budget = "$11.35M"
-
-class HorizontalBudgetBar{
-
-  constructor(container) {
-    this.container = d3.select(container);
-  }
-
-  draw(name) {
-    this.container.select("*").remove();
-    const { height, width } = this.container.node().getBoundingClientRect();
-
-    let actor_data = window.stats[name];
-
-    this.data = [{actor: "Average", value: avg_budget}, {actor: name, value: actor_data["Average budget"]}];
-
-    d3.select(window).on("resize.horizontalbar", () => {
-      this.draw(name);
-    });
-
-    this.xScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(this.data.map(function (d) {return money_to_value(d.value)}))])
-      .range([margin_horizontal.left, width - margin_horizontal.right]);  
-
-    // Bound yScale using minDataPoint and maxDataPoint
-    this.yScale = d3
-      .scaleBand()
-      .range([height - margin_horizontal.bottom, margin_horizontal.top])
-      .domain(this.data.map(function (d) {return d.actor}));
-      
-    let xS = this.xScale;
-    let yS = this.yScale;
-
-    // Add the chart to the HTML page
-    this.svg = this.container
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
-
-     // create tooltip element  
-     const tooltip = d3.select("body")
-     .append("div")
-     .attr("class","d3-tooltip")
-     .style("position", "absolute")
-     .style("z-index", "10")
-     .style("visibility", "hidden")
-     .style("padding", "15px")
-     .style("background", "rgba(0,0,0,0.6)")
-     .style("border-radius", "5px")
-     .style("color", "#fff")
-     .text("a simple tooltip");
-
-    const bar_color = "lightgray"
-
-    this.svg
-      .selectAll("rect")
-      .data(this.data)
-      .join("rect")
-      .attr("y", function (d) {
-        return yS(d.actor);
-      })
-      .attr("x", function (d) {
-        return margin_horizontal.left;
-      })
-      .attr("width", function (d) {
-        return xS(money_to_value(d.value))-margin_horizontal.left;
-      })
-      .attr("height", "15px")
-      .attr("fill", bar_color)
-      .style("transform", "translateY(22px)")
-      .on("mouseover", function(ev, d) {
-        tooltip.html(`Average budget: ${d.value}`).style("visibility", "visible");
-        d3.select(this)
-          .attr("fill", "#808080");
-      })
-      .on("mousemove", function(event){
-        tooltip
-          .style("top", (event.pageY-10)+"px")
-          .style("left",(event.pageX+10)+"px");
-      })
-      .on("mouseout", function() {
-        tooltip.html(``).style("visibility", "hidden");
-        d3.select(this).attr("fill", bar_color);
-      });
-
-    this.xAxis = d3.axisBottom(this.xScale).ticks(8).tickFormat(d => `${format_money(d)}`);
-    this.svg
-      .append("g")
-      .attr("transform", "translate(0," + (height - margin_horizontal.bottom) + ")")
-      .call(this.xAxis);
-
-    this.yAxis = d3.axisLeft(this.yScale).ticks(2);
-
-    this.svg
-      .append("g")
-      .attr("transform", "translate(" + margin_horizontal.left + ",0)")
-      .call(this.yAxis);
-
-  }
-
-}
-
-const avg_revenue = "$33.45M"
-
-class HorizontalRevenueBar{
-
-  constructor(container) {
-    this.container = d3.select(container);
-  }
-
-  draw(name) {
-    this.container.select("*").remove();
-    const { height, width } = this.container.node().getBoundingClientRect();
-
-    let actor_data = window.stats[name];
-
-    this.data = [{actor: "Average", value: avg_revenue}, {actor: name, value: actor_data["Average revenue"]}];
-
-    d3.select(window).on("resize.horizontalbar", () => {
-      this.draw(name);
-    });
-
-    this.xScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(this.data.map(function (d) {return money_to_value(d.value)}))])
-      .range([margin_horizontal.left, width - margin_horizontal.right]);  
-
-    // Bound yScale using minDataPoint and maxDataPoint
-    this.yScale = d3
-      .scaleBand()
-      .range([height - margin_horizontal.bottom, margin_horizontal.top])
-      .domain(this.data.map(function (d) {return d.actor}));
-      
-    let xS = this.xScale;
-    let yS = this.yScale;
-
-    // Add the chart to the HTML page
-    this.svg = this.container
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
-
-     // create tooltip element  
-     const tooltip = d3.select("body")
-     .append("div")
-     .attr("class","d3-tooltip")
-     .style("position", "absolute")
-     .style("z-index", "10")
-     .style("visibility", "hidden")
-     .style("padding", "15px")
-     .style("background", "rgba(0,0,0,0.6)")
-     .style("border-radius", "5px")
-     .style("color", "#fff")
-     .text("a simple tooltip");
-
-    const bar_color = "#ff8566"
-
-    this.svg
-      .selectAll("rect")
-      .data(this.data)
-      .join("rect")
-      .attr("y", function (d) {
-        return yS(d.actor);
-      })
-      .attr("x", function (d) {
-        return margin_horizontal.left;
-      })
-      .attr("width", function (d) {
-        return xS(money_to_value(d.value))-margin_horizontal.left;
-      })
-      .attr("height", "15px")
-      .attr("fill", bar_color)
-      .style("transform", "translateY(22px)")
-      .on("mouseover", function(ev, d) {
-        tooltip.html(`Average revenue: ${d.value}`).style("visibility", "visible");
-        d3.select(this)
-          .attr("fill", "#ff471a");
-      })
-      .on("mousemove", function(event){
-        tooltip
-          .style("top", (event.pageY-10)+"px")
-          .style("left",(event.pageX+10)+"px");
-      })
-      .on("mouseout", function() {
-        tooltip.html(``).style("visibility", "hidden");
-        d3.select(this).attr("fill", bar_color);
-      });
-
-    this.xAxis = d3.axisBottom(this.xScale).ticks(4).tickFormat(d => `${format_money(d)}`);
-    this.svg
-      .append("g")
-      .attr("transform", "translate(0," + (height - margin_horizontal.bottom) + ")")
-      .call(this.xAxis);
-
-    this.yAxis = d3.axisLeft(this.yScale).ticks(2);
-
-    this.svg
-      .append("g")
-      .attr("transform", "translate(" + margin_horizontal.left + ",0)")
-      .call(this.yAxis);
-
-  }
-
-}
-
-
-
-$(document).ready(function () {
-
-  d3.json("data/actors_stats.json").then((data) => {
-    window.stats = data;
-    window.showStats(window.name);
-    
-  });
-
-  d3.json("data/actors_releases_per_year.json").then((data) => {
-    window.releasesData = data.data;
-
-    const graph = new TimeBarChart("#actor-stats");
-    graph.draw(window.name);
-
-    window.updateStats = (name) => {
-      graph.draw(name);
-    };
-
-  });
-});

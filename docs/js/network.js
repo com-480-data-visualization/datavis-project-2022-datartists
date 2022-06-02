@@ -63,7 +63,6 @@ class NetworkGraph {
   }
 
   updateGraph = () => {
-    d3.select(".actor-name").html(this.name);
     const { nodes, edges } = this.data;
 
     this.draw_links();
@@ -79,10 +78,6 @@ class NetworkGraph {
         .links(edges)
     );
     this.simulation.alpha(0.3).restart();
-
-    window.reloadTreemap(this.name);
-    window.showStats(this.name);
-    window.updateStats(this.name);
   };
 
   resize = () => {
@@ -185,9 +180,7 @@ class NetworkGraph {
             })
             .on("click", (ev, n) => {
               this.name = n.id;
-              this.getData().then(() => {
-                this.updateGraph();
-              });
+              window.updateData(this.name);
             });
 
           node
@@ -278,13 +271,13 @@ class NetworkGraph {
 
         that.tooltip
           .style("left", Math.max(ev.pageX, width / 2) + "px")
-          .style("top", ev.pageY - height - 10 + "px");
+          .style("top", Math.max(0, ev.pageY - height - 10) + "px");
       })
       .on("mousemove", function (ev, n) {
         const { width, height } = that.tooltip.node().getBoundingClientRect();
         that.tooltip
           .style("left", Math.max(ev.pageX, width / 2) + "px")
-          .style("top", ev.pageY - height - 10 + "px");
+          .style("top", Math.max(0, ev.pageY - height - 10) + "px");
       })
       .on("mouseout", function (ev, l) {
         d3.select(this)
@@ -358,41 +351,3 @@ class NetworkGraph {
       .on("end", dragended);
   }
 }
-
-$(document).ready(function () {
-  const graph = new NetworkGraph("#network", window.name);
-
-  const options = {
-    // Search in `author` and in `tags` array
-    keys: ["id"],
-  };
-  d3.json("data/actor_nodes.json").then((data) => {
-    const fuse = new Fuse(data, options);
-    const $rbox = $("#search-results");
-    $("#search-input").on("input", function () {
-      if ($(this).val().length === 0) {
-        $rbox.hide();
-      } else {
-        $rbox.find("*").remove();
-        $rbox.width($(this).css("width"));
-        const results = fuse.search($(this).val());
-        results.slice(0, 10).forEach((r) => {
-          $rbox.append(
-            `<button class="actor-button px-2 py-1">${r.item.id}</button>`
-          );
-        });
-        $rbox.show();
-        const that = this;
-        $(".actor-button").on("click", function () {
-          graph.update($(this).text());
-          $(that).val("");
-          $rbox.hide();
-        });
-      }
-
-      // graph.update(result);
-    });
-    // const result = fuse.search("george san");
-    // console.log(result);
-  });
-});
