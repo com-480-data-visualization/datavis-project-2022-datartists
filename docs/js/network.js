@@ -15,10 +15,14 @@ class NetworkGraph {
         d3.json("data/actors_genres_movies.json").then((data) => {
           this.actors_genres = data;
           const genres = Object.keys(data[Object.keys(data)[0]]);
-          this.genresColor = d3.scaleOrdinal(genres, d3.schemeTableau10);
 
-          this.getData().then(() => {
-            this.draw();
+          d3.json("data/genre_colors.json").then((data) => {
+
+            this.genresColor = data;
+
+            this.getData().then(() => {
+              this.draw();
+            });
           });
         });
       });
@@ -209,7 +213,7 @@ class NetworkGraph {
               const maxGenre = sums[d3.maxIndex(sums, (d) => d[1])][0];
               console.log(d.id + " " + maxGenre);
 
-              return that.genresColor(maxGenre);
+              return that.genresColor[maxGenre];
             });
 
           node

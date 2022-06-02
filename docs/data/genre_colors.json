@@ -1,0 +1,22 @@
+{
+  "Adventure": "#fdbf6f",
+  "Action": "#ff7f00",
+  "Romance": "#fb9a99",
+  "Drama": "#e31a1c",
+  "Fantasy": "#a6cee3",
+  "Science Fiction": "#1f78b4",
+  "Animation": "#ffff99",
+  "Comedy": "#b2df8a",
+  "Family": "#33a02c",
+  "Horror": "#5e7563",
+  "Thriller": "#2f3b32",
+  "Mystery": "#b816b8",
+  "Crime": "#cab2d6",
+  "Western": "#b15928",
+  "War": "#6a3d9a",
+  "Foreign": "#820096",
+  "History": "#300008",
+  "Music": "#e5f53b",
+  "Documentary": "#1403a6",
+  "TV Movie": "#8a6629"
+}

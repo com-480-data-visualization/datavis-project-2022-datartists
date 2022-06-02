@@ -15,12 +15,13 @@ class Treemap {
     return Promise.all([
       d3.json("data/actors_genres_movies.json"),
       d3.json("data/movies.json"),
-    ]).then(([data, movies]) => {
+      d3.json("data/genre_colors.json"),
+    ]).then(([data, movies, genreColors]) => {
       this.data = data;
       this.movies = movies;
 
       this.genres = Object.keys(this.data[Object.keys(this.data)[0]]);
-      this.color = d3.scaleOrdinal(this.genres, d3.schemeTableau10);
+      this.color = genreColors;
     });
   }
 
@@ -61,7 +62,7 @@ class Treemap {
         .attr("width", size)
         .attr("height", size)
         .style("fill", function (d) {
-          return that.color(d)
+          return that.color[d]
         })
 
     legend.append('text')
@@ -190,7 +191,7 @@ class Treemap {
             .duration(1000)
             .attr("width", (d) => d.x1 - d.x0)
             .attr("height", (d) => d.y1 - d.y0)
-            .attr("fill", (d, i) => this.color(d.parent.data.name));
+            .attr("fill", (d, i) => this.color[d.parent.data.name]);
 
           node
             .append("text")
@@ -231,7 +232,6 @@ class Treemap {
             .attr("y", (d) => d.y0)
             .attr("width", (d) => d.x1 - d.x0)
             .attr("height", (d) => d.y1 - d.y0)
-            .attr("fill", (d, i) => this.color(d.parent.data.name));
           update
             .select("#movie-title")
             .each(function (d) {
