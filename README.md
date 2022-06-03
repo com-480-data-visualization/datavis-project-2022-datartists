@@ -35,7 +35,7 @@ The preprocessing and our first d3js version of the actors connection graph can 
 
 You can find our Process book [here](ProcessBook.pdf).
 
-The screencast in available under this link ...
+The screencast is available [here](screencast-actorsgalaxy.mp4).
 
 The source code of the webiste including html, js and css can be found in the `docs/` folder.
 
