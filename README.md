@@ -24,3 +24,9 @@ The `treemap-preproc` notebook in the `treemap/` folder produces a `data.json` f
 ### Connection graph
 
 The preprocessing and our first d3js version of the actors connection graph can be found in the `actor_network/` folder.
+
+
+## 2. Milestone 3
+
+You can find our Process book [here](ProcessBook.pdf).
+
