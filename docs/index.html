@@ -4,17 +4,21 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DatArtists</title>
+    <title>ActorsGalaxy - DatArtists</title>
     <link rel="stylesheet" href="css/style.css" />
+    <!--D3JS-->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3plus@2"></script>
+    <!--Tailwind css-->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!--Fuse js-->
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <!--jquery-->
     <script
       src="https://code.jquery.com/jquery-3.6.0.min.js"
       integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
       crossorigin="anonymous"
     ></script>
+    <!--Our scripts-->
     <script src="js/treemap.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/network.js"></script>
@@ -25,6 +29,7 @@
       <h1 class="text-2xl font-bold">
         ActorsGalaxy <span class="text-lg text-gray-400">by DatArtists</span>
       </h1>
+      <!--Search bar-->
       <div>
         <input
           type="text"
@@ -41,6 +46,7 @@
     </div>
     <div class="flex gap-2 m-2" style="height: calc(100vh - 88px)">
       <div class="w-1/2 flex flex-col justify-center">
+        <!--Actor network viz-->
         <div id="network" class="h-full shadow-md rounded-md bg-white"></div>
       </div>
 
@@ -50,8 +56,10 @@
           <div class="h-full flex flex-row">
             <div id="" class="w-3/4 flex flex-col pr-1">
               <p class="text-xl font-bold">
+                <!--Actor name-->
                 <span class="actor-name"></span>
               </p>
+              <!--Actor stats buttons-->
               <div class="text-sm flex flex-row mt-2">
                 <button
                   id="releases"
@@ -84,15 +92,12 @@
                   Average revenue
                 </button>
               </div>
+              <!--Actor stats visualisations-->
               <div id="actor-stats" class="h-full overflow-hidden"></div>
             </div>
             <!--Actor image on the right-->
             <div id="actor-image" class="w-1/4 flex justify-center"></div>
           </div>
-          <!--Movie releases
-          <div class="h-1/3">
-            <div class="h-full flex" id="releases"></div>
-          </div>-->
         </div>
         <!--Treemap-->
         <div class="h-3/5 shadow-md rounded-md bg-white p-2 flex flex-col">

@@ -1,10 +1,15 @@
+/*
+ * Network graph class to show actors connections
+ */
 class NetworkGraph {
   constructor(container, name) {
     this.container = d3.select(container);
     this.name = name;
 
+    // log scale for the node size
     this.weightScale = d3.scaleSqrt().domain([1, 15]).range([5, 30]);
 
+    // load accessory data, get data for the actor then draw
     d3.json("data/movies.json").then((data) => {
       this.movies = data;
 
@@ -13,10 +18,8 @@ class NetworkGraph {
 
         d3.json("data/actors_genres_movies.json").then((data) => {
           this.actors_genres = data;
-          const genres = Object.keys(data[Object.keys(data)[0]]);
 
           d3.json("data/genre_colors.json").then((data) => {
-
             this.genresColor = data;
 
             this.getData().then(() => {
@@ -28,16 +31,18 @@ class NetworkGraph {
     });
   }
 
+  // update the data for the asked actor and redraw the graph
   update(name) {
     this.name = name;
-    console.log(name);
     this.getData().then(() => {
       this.updateGraph();
     });
   }
 
+  // load the actor edges data and filter to get the top 20 actors and all their interconnections
   getData(top = 20) {
     return d3.json("data/actor_edges.json").then((edges_data) => {
+      // get the top 20 actors
       let nodes = edges_data
         .filter((e) => {
           return e.source === this.name || e.target === this.name;
@@ -47,7 +52,7 @@ class NetworkGraph {
         .slice(0, top);
       nodes.push({ id: this.name });
 
-      // console.log(nodes);
+      // get edges between the top 20 actors
       const edges = edges_data.filter((e) => {
         let source = false;
         const node_present = nodes.find((n) => {
@@ -65,11 +70,13 @@ class NetworkGraph {
     });
   }
 
+  // update the graph
   updateGraph = () => {
     const { nodes, edges } = this.data;
 
-    this.draw_links();
-    this.draw_nodes();
+    // update links, nodes and reset the force simulation
+    this.drawLinks();
+    this.drawNodes();
     this.simulation.nodes(nodes);
     this.simulation.force(
       "link",
@@ -83,10 +90,12 @@ class NetworkGraph {
     this.simulation.alpha(0.3).restart();
   };
 
+  // resize handler
   resize = () => {
     this.bb = this.container.node().getBoundingClientRect();
     this.svg.attr("width", this.bb.width);
     this.svg.attr("height", this.bb.height);
+    // center the graph and reset the simulation
     this.simulation.force(
       "center",
       d3.forceCenter(this.bb.width / 2, this.bb.height / 2)
@@ -94,6 +103,7 @@ class NetworkGraph {
     this.simulation.alpha(0.3).restart();
   };
 
+  // setup graph and draw
   draw() {
     this.bb = this.container.node().getBoundingClientRect();
     this.svg = this.container
@@ -104,6 +114,7 @@ class NetworkGraph {
     d3.select(window).on("resize", this.resize);
     const { nodes, edges } = this.data;
 
+    // create tooltip
     this.tooltip = this.container
       .append("div")
       .attr("class", "tooltip")
@@ -111,11 +122,11 @@ class NetworkGraph {
 
     // Initialize the links
     this.link = this.svg.append("g").selectAll("line");
-    this.draw_links();
+    this.drawLinks();
 
     // initialize nodes
     this.node = this.svg.append("g").selectAll("g");
-    this.draw_nodes();
+    this.drawNodes();
 
     // Let's list the force we wanna apply on the network
     this.simulation = d3
@@ -129,27 +140,31 @@ class NetworkGraph {
           }) // This provide  the id of a node
           .links(edges) // and this the list of links
       )
-      .force("charge", d3.forceManyBody().strength(-1200)) // This adds repulsion between nodes. Play with the -400 for the repulsion strength
+      .force("charge", d3.forceManyBody().strength(-1200)) // This adds repulsion between nodes
       .force("center", d3.forceCenter(this.bb.width / 2, this.bb.height / 2)) // This force attracts nodes to the center of the this.svg area
       .on("tick", this.ticked);
   }
 
-  draw_nodes() {
+  // nodes
+  drawNodes() {
     const that = this;
     const { nodes } = this.data;
     this.node = this.node
       .data(nodes, (n) => n.id)
       .join(
+        // when creating new nodes
         (enter) => {
           const node = enter
             .append("g")
             .style("cursor", "pointer")
-            .call(this.drag(this.simulation))
+            .call(this.drag(this.simulation)) // handle node drag
             .on("mouseover", function (ev, n) {
+              // decrease brightness of the node
               d3.select(this)
                 .transition()
                 .duration("50")
                 .attr("filter", "brightness(60%)");
+              // show tooltip
               that.tooltip.transition().duration(50).style("opacity", 1);
               that.tooltip.html(
                 "<img src='https://image.tmdb.org/t/p/w200/" +
@@ -159,14 +174,17 @@ class NetworkGraph {
                   "</b>"
               );
 
+              // set tooltip position
               const { width, height } = that.tooltip
                 .node()
                 .getBoundingClientRect();
+              // use max to prevent tooltip from going outside the window
               that.tooltip
                 .style("left", Math.max(ev.pageX, width / 2) + "px")
                 .style("top", Math.max(0, ev.pageY - height - 10) + "px");
             })
             .on("mousemove", function (ev, n) {
+              // update tooltip position
               const { width, height } = that.tooltip
                 .node()
                 .getBoundingClientRect();
@@ -175,23 +193,28 @@ class NetworkGraph {
                 .style("top", Math.max(0, ev.pageY - height - 10) + "px");
             })
             .on("mouseout", function (ev, n) {
+              // reset brightness of node
               d3.select(this)
                 .transition()
                 .duration("50")
                 .attr("filter", "brightness(100%)");
+              // hide tooltip
               that.tooltip.transition().duration("50").style("opacity", 0);
             })
             .on("click", (ev, n) => {
+              // when clicking on a node update all the graphs
               this.name = n.id;
               window.updateData(this.name);
             });
 
+          // add node circle
           node
             .append("circle")
             .attr("r", (d) => {
               return d.id === this.name ? 20 : 10;
             })
             .style("fill", (d) => {
+              // use the color of the genre with the largest budget sum
               const sums = Object.entries(that.actors_genres[d.id]).map(
                 ([k, v]) => [
                   k,
@@ -201,13 +224,12 @@ class NetworkGraph {
                   ),
                 ]
               );
-              console.log(sums);
               const maxGenre = sums[d3.maxIndex(sums, (d) => d[1])][0];
-              console.log(d.id + " " + maxGenre);
 
               return that.genresColor[maxGenre];
             });
 
+          // add node text
           node
             .append("text")
             .text(function (d) {
@@ -224,6 +246,7 @@ class NetworkGraph {
           return node;
         },
         (update) => {
+          // when updating a node
           update.select("circle").attr("r", (d) => {
             return d.id === this.name ? 20 : 10;
           });
@@ -235,7 +258,8 @@ class NetworkGraph {
       );
   }
 
-  draw_links() {
+  // links
+  drawLinks() {
     const that = this;
     const { edges } = this.data;
     this.link = this.link
@@ -247,8 +271,8 @@ class NetworkGraph {
         return that.weightScale(d.weight) + "px";
       })
       .on("mouseover", function (ev, l) {
+        // decrease brightness of connected nodes and the link
         const movieNames = l.movie_ids.map((id) => that.movies[id].title);
-
         that.node
           .filter((n) => {
             return n.id === l.source.id || n.id === l.target.id;
@@ -261,6 +285,8 @@ class NetworkGraph {
           .transition()
           .duration("50")
           .style("stroke", "rgba(0,0,0,0.7)");
+
+        // show tooltip
         that.tooltip.transition().duration(50).style("opacity", 1);
         that.tooltip.html(
           "<b>" +
@@ -270,24 +296,26 @@ class NetworkGraph {
             ":</b><br>" +
             movieNames.join("<br>")
         );
-        const { width, height } = that.tooltip.node().getBoundingClientRect();
 
+        // set tooltip position
+        const { width, height } = that.tooltip.node().getBoundingClientRect();
         that.tooltip
           .style("left", Math.max(ev.pageX, width / 2) + "px")
           .style("top", Math.max(0, ev.pageY - height - 10) + "px");
       })
       .on("mousemove", function (ev, n) {
+        // set tooltip position
         const { width, height } = that.tooltip.node().getBoundingClientRect();
         that.tooltip
           .style("left", Math.max(ev.pageX, width / 2) + "px")
           .style("top", Math.max(0, ev.pageY - height - 10) + "px");
       })
       .on("mouseout", function (ev, l) {
+        // reset brightness of connected nodes and the link
         d3.select(this)
           .transition()
           .duration("50")
           .style("stroke", "rgba(0,0,0,0.05)");
-        that.tooltip.transition().duration("50").style("opacity", 0);
         that.node
           .filter((n) => {
             return n.id === l.source.id || n.id === l.target.id;
@@ -296,9 +324,12 @@ class NetworkGraph {
           .transition()
           .duration("50")
           .attr("filter", "brightness(100%)");
+        // hide tooltip
+        that.tooltip.transition().duration("50").style("opacity", 0);
       });
   }
 
+  // prevent nodes to leave the window
   checkBounds(d) {
     if (d.x < 15) d.x = 15;
     if (d.x > this.bb.width - 15) d.x = this.bb.width - 15;
@@ -329,6 +360,8 @@ class NetworkGraph {
       return "translate(" + d.x + "," + d.y + ")";
     });
   };
+
+  // handle node dragging
   drag() {
     const dragstarted = (event) => {
       if (!event.active) this.simulation.alphaTarget(0.3).restart();

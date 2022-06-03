@@ -1,3 +1,6 @@
+/*
+ * Treemap class to show actor's movies
+ */
 class Treemap {
   constructor(container, legend_container, actorName) {
     this.container = d3.select(container);
@@ -10,9 +13,11 @@ class Treemap {
       left: 5,
       bottom: 5,
     };
+    // get data then draw
     this.getData().then(() => this.draw());
   }
 
+  // load the data
   getData() {
     return Promise.all([
       d3.json("data/actors_genres_movies.json"),
@@ -27,39 +32,43 @@ class Treemap {
     });
   }
 
+  // update tree and legend when actor is changed
   update(name) {
     this.name = name;
-    this.draw_tree();
-    this.draw_legend();
+    this.drawTree();
+    this.drawLegend();
   }
 
+  // setup graph and draw graph + legend
   draw() {
     this.svg = this.container.append("svg");
-    this.draw_legend();
+    this.drawLegend();
 
     this.tooltip = this.container
       .append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
 
-    this.draw_tree();
+    this.drawTree();
   }
 
-  draw_legend() {
+  // draw the legend
+  drawLegend() {
     $("#treemap-legend").empty();
     const usedGenres = Object.entries(this.data[this.name])
       .filter(([_, ids]) => ids.length)
       .map(([genre, _]) => genre);
     usedGenres.forEach((d) => {
       $("#treemap-legend").append(
-        `<div class="flex flex-row items-center mr-2 shrink-0"><div class="w-4 h-4 mr-1" style="background-color: ${
-          this.color[d]}"></div><div>${d}</div></div>`
+        `<div class="flex flex-row items-center mr-2 shrink-0"><div class="w-4 h-4 mr-1" style="background-color: ${this.color[d]}"></div><div>${d}</div></div>`
       );
     });
   }
 
-  draw_tree() {
+  // draw the treemap
+  drawTree() {
     d3.select(window).on("resize.treemap", () => {
+      // deal with resizing
       this.update(this.name);
     });
     const { height, width } = this.container.node().getBoundingClientRect();
@@ -74,10 +83,11 @@ class Treemap {
         .map(([key, ids]) => ({
           name: key,
           children: ids.map((id) => ({
+            // add attributes to each movie
             name: this.movies[id].title,
             value: Math.max(100000, this.movies[id].budget),
-            budget: format_money(this.movies[id].budget),
-            revenue: format_money(this.movies[id].revenue),
+            budget: formatMoney(this.movies[id].budget),
+            revenue: formatMoney(this.movies[id].revenue),
             vote_average: this.movies[id].vote_average,
             vote_count: this.movies[id].vote_count,
             year: this.movies[id].release_date.split("-")[0],
@@ -91,6 +101,7 @@ class Treemap {
     this.leaves = root.leaves();
     root.sort((a, b) => d3.descending(a.value, b.value));
 
+    // create treemap
     d3
       .treemap()
       .tile(d3.treemapBinary)
@@ -105,13 +116,16 @@ class Treemap {
       .data(this.leaves, (l) => l.data.name)
       .join(
         (enter) => {
+          // creating new nodes
           const node = enter
             .append("g")
             .on("mouseover", function (ev, n) {
+              // reduce square opacity
               d3.select(this)
                 .transition()
                 .duration("50")
                 .attr("opacity", ".85");
+              // show tooltip
               that.tooltip
                 .transition()
                 .duration(50)
@@ -136,6 +150,7 @@ class Treemap {
                   n.data.vote_count +
                   " votes)"
               );
+              // set tooltip position
               const tooltip_rect = that.tooltip.node().getBoundingClientRect();
               that.tooltip
                 .style(
@@ -149,6 +164,7 @@ class Treemap {
             })
             .on("mousemove", function (ev, n) {
               const tooltip_rect = that.tooltip.node().getBoundingClientRect();
+              // update tooltip position
               that.tooltip
                 .style(
                   "left",
@@ -160,11 +176,13 @@ class Treemap {
                 .style("top", ev.pageY - tooltip_rect.height - 10 + "px");
             })
             .on("mouseout", function (ev, n) {
+              // reset square opacity
               d3.select(this).transition().duration("50").attr("opacity", "1");
+              // hide tooltip
               that.tooltip.transition().duration("50").style("opacity", 0);
-            })
-            .attr("data-value", (d) => d.data.value);
+            });
 
+          // add the rectangle
           node
             .append("rect")
             .attr("x", (d) => d.x0)
@@ -175,6 +193,7 @@ class Treemap {
             .attr("height", (d) => d.y1 - d.y0)
             .attr("fill", (d, i) => this.color[d.parent.data.name]);
 
+          // add the movie title
           node
             .append("text")
             .attr("id", "movie-title")
@@ -191,6 +210,7 @@ class Treemap {
             })
             .attr("fill", "white");
 
+          // add the movie text
           node
             .append("text")
             .attr("id", "movie-budget")
@@ -217,6 +237,7 @@ class Treemap {
           return node;
         },
         (update) => {
+          // update the rectangles and text with animation
           update
             .select("rect")
             .transition()
@@ -224,7 +245,7 @@ class Treemap {
             .attr("x", (d) => d.x0)
             .attr("y", (d) => d.y0)
             .attr("width", (d) => d.x1 - d.x0)
-            .attr("height", (d) => d.y1 - d.y0)
+            .attr("height", (d) => d.y1 - d.y0);
           update.select("#movie-title").each(function (d) {
             const self = d3.select(this);
             const maxWidth = d.x1 - d.x0 - 5;
@@ -246,8 +267,6 @@ class Treemap {
             const maxWidth = d.x1 - d.x0 - 5;
             // Reset text
             self.text(d.data.budget);
-            // Resize text according to maxWidth
-            let newSize = resizeText(self, maxWidth, 15, 30);
             // Move the textbox to fit the new size
             let textLength = self.node().getBBox().width;
             self
@@ -287,7 +306,8 @@ function resizeText(textElement, maxWidth, minSize, maxSize) {
   return fontSize;
 }
 
-function format_money(value) {
+// value to formatted currency
+function formatMoney(value) {
   if (value === 0) {
     return "-";
   }

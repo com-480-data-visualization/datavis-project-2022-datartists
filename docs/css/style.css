@@ -1,3 +1,4 @@
+/* tooltip design */
 .tooltip {
   background-color: white;
   border: 1px solid black;
@@ -10,6 +11,7 @@
   transform: translateX(-50%);
 }
 
+/* search results design */
 .search-results {
   background-color: white;
   border: 1px solid black;
