@@ -39,3 +39,7 @@ The screencast is available [here](screencast-actorsgalaxy.mp4).
 
 The source code of the webiste including html, js and css can be found in the `docs/` folder.
 
+
+The `notebooks/` folder contains jupyter notebooks used for data pre-processing, `treemap/`, `actor-network/` and `scraping/` correspond respectively to the treemap, actor network and web scraper development parts.
+
+
