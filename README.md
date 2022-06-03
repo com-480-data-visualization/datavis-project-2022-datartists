@@ -1,6 +1,6 @@
 # Actors Galaxy
 
-Explore the Actors Galaxy right [here](https://com-480-data-visualization.github.io/datavis-project-2022-datartists/).
+Explore the Actors Galaxy and start your journey right [here](https://com-480-data-visualization.github.io/datavis-project-2022-datartists/).
 
 ## 1. Milestone 1
 
@@ -31,4 +31,7 @@ The preprocessing and our first d3js version of the actors connection graph can 
 ## 2. Milestone 3
 
 You can find our Process book [here](ProcessBook.pdf).
+The screencast in available under this link ...
+
+The source code of the webiste including html, js and css can be found in the `docs/` folder.
 
