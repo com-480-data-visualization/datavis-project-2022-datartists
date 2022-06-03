@@ -2,6 +2,9 @@
 
 Explore the Actors Galaxy and start your journey right [here](https://com-480-data-visualization.github.io/datavis-project-2022-datartists/).
 
+## Data 
+We used the Movie Dataset from Kaggle and more precisely the movie_metadata.csv and credits.csv. You can either download the whole dataset as described in the Milestone 1 part or find the only two files we used [here](https://drive.google.com/drive/folders/1Ekyfizxu2XMaapxhvsfxsvlNepxN_nwd?usp=sharing) (google drive).
+
 ## 1. Milestone 1
 
 You can find our Milestone 1 description [here](DatArtists_Milestone1.pdf).
