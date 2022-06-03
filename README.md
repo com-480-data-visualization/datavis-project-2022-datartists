@@ -28,9 +28,10 @@ The `treemap-preproc` notebook in the `treemap/` folder produces a `data.json` f
 The preprocessing and our first d3js version of the actors connection graph can be found in the `actor_network/` folder.
 
 
-## 2. Milestone 3
+## 3. Milestone 3
 
 You can find our Process book [here](ProcessBook.pdf).
+
 The screencast in available under this link ...
 
 The source code of the webiste including html, js and css can be found in the `docs/` folder.
