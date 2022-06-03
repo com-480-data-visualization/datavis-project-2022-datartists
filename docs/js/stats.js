@@ -2,7 +2,7 @@ const margin = {
   top: 30,
   right: 30,
   bottom: 20,
-  left: 20,
+  left: 30,
 };
 
 /*
@@ -75,7 +75,11 @@ class TimeBarChart {
             return d.release_date;
           })
         ) - 1,
-        2018,
+        d3.max(
+          this.data.map(function (d) {
+            return d.release_date;
+          })
+        ) + 1,
       ]);
 
     const yS = d3
@@ -111,7 +115,9 @@ class TimeBarChart {
       .on("mouseover", function (ev, d) {
         // show tooltip
         that.tooltip.transition().duration(50).style("opacity", 1);
-        that.tooltip.html(`Movie releases: ${d.title}`);
+        that.tooltip.html(
+          `Movie releases: ${d.title}<br>Year: ${d.release_date}`
+        );
 
         // decrease brightness of the bar
         d3.select(this)

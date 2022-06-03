@@ -123,19 +123,22 @@ $(document).ready(function () {
   // setup search bar
   setupSearchBar();
   // set first actor name
-  const name = "Tom Cruise";
-  // display name
-  d3.select(".actor-name").html(name);
-  // draw treemap, network and stats graphs
-  const treemap = new Treemap("#treemap", "#treemap-legend", name);
-  const network = new NetworkGraph("#network", name);
-  showStats(name);
+  d3.json("data/actors_stats.json").then((data) => {
+    const actors = Object.keys(data);
+    const name = actors[Math.floor(Math.random() * actors.length)];
+    // display name
+    d3.select(".actor-name").html(name);
+    // draw treemap, network and stats graphs
+    const treemap = new Treemap("#treemap", "#treemap-legend", name);
+    const network = new NetworkGraph("#network", name);
+    showStats(name);
 
-  // set window function to update the graphs for a new actor
-  window.updateData = (name) => {
-    d3.select(".actor-name").html(this.name);
-    treemap.update(name);
-    network.update(name);
-    window.updateStats(name);
-  };
+    // set window function to update the graphs for a new actor
+    window.updateData = (name) => {
+      d3.select(".actor-name").html(name);
+      treemap.update(name);
+      network.update(name);
+      window.updateStats(name);
+    };
+  });
 });
