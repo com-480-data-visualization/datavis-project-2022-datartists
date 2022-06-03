@@ -1,4 +1,6 @@
-# datavis-project-2022-datartists
+# Actors Galaxy
+
+Explore the Actors Galaxy right [here](https://com-480-data-visualization.github.io/datavis-project-2022-datartists/).
 
 ## 1. Milestone 1
 
